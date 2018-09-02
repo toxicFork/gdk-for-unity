@@ -37,6 +37,7 @@ namespace Playground
             world.GetOrCreateManager<MetricSendSystem>();
             world.GetOrCreateManager<ProcessScoresSystem>();
             world.GetOrCreateManager<CollisionProcessSystem>();
+            world.GetOrCreateManager<LodLoader>();
         }
 
         private static void AddLifecycleSystems(World world)
