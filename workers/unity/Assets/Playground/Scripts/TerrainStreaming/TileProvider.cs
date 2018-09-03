@@ -21,12 +21,11 @@ namespace Playground
             visibleTiles = new Dictionary<TileKey, int>();
         }
 
-        public void LoadTile(TileKey key, Vector3 center)
+        public void LoadTile(TileKey key)
         {
             if (visibleTiles.ContainsKey(key))
             {
                 visibleTiles[key] = lastCleaned;
-                vizualizer.UpdateTile(key);
                 return;
             }
 
@@ -44,10 +43,10 @@ namespace Playground
             }
 
             visibleTiles[key] = lastCleaned;
-            vizualizer.LoadTile(key, tileData, center);
+            vizualizer.LoadTile(key, tileData);
         }
 
-        public void UnloadUnused()
+        public void Update()
         {
             visibleTiles
                 .Where(entry => entry.Value != lastCleaned)
@@ -59,6 +58,8 @@ namespace Playground
                 });
 
             lastCleaned++;
+
+            vizualizer.Update();
         }
 
         public void Dispose()

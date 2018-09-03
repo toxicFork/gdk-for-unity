@@ -29,7 +29,7 @@ namespace Playground
                 }
             }
 
-            tileProvider.UnloadUnused();
+            tileProvider.Update();
         }
 
         private void LoadTile(int lodLevel, float x, float z, List<Vector3> points)
@@ -57,10 +57,11 @@ namespace Playground
                 {
                     LodLevel = lodLevel,
                     X = (int) (x / lodSetting.TileSize),
-                    Z = (int) (z / lodSetting.TileSize)
+                    Z = (int) (z / lodSetting.TileSize),
+                    Center = center
                 };
 
-                tileProvider.LoadTile(key, center);
+                tileProvider.LoadTile(key);
             }
         }
 

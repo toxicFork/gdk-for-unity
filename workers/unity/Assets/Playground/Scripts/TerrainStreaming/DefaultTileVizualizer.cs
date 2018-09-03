@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -9,72 +10,84 @@ namespace Playground
     {
         private readonly List<GameObject> freeGameObjects = new List<GameObject>();
         private readonly Dictionary<TileKey, GameObject> usedGameObjects = new Dictionary<TileKey, GameObject>();
+        private readonly Dictionary<TileKey, TileData> visibleTiles = new Dictionary<TileKey, TileData>();
         private const int Capacity = 20;
 
-        public void LoadTile(TileKey key, TileData tileData, Vector3 center)
+        public void LoadTile(TileKey key, TileData tileData)
         {
-            if (usedGameObjects.ContainsKey(key))
+            if (visibleTiles.ContainsKey(key))
             {
                 throw new InvalidOperationException("Cannot vizualize a tile which is already visible.");
             }
 
-            GameObject tile;
-            if (freeGameObjects.Count > 0)
+            if (key.LodLevel == 0)
             {
-                tile = freeGameObjects[0];
-                freeGameObjects.RemoveAt(0);
+                GameObject tile;
+                if (freeGameObjects.Count > 0)
+                {
+                    tile = freeGameObjects[0];
+                    freeGameObjects.RemoveAt(0);
+                }
+                else
+                {
+                    tile = new GameObject();
+                    tile.AddComponent<MeshCollider>();
+                }
+
+                tile.name = $"Lod{key.LodLevel}_x{key.X}_z{key.Z}";
+                tile.transform.position = key.Center;
+
+                var collider = tile.GetComponent<MeshCollider>();
+                collider.sharedMesh = tileData.Mesh;
+
+                usedGameObjects[key] = tile;
             }
-            else
-            {
-                tile = new GameObject();
-                tile.AddComponent<MeshCollider>();
-                tile.AddComponent<MeshFilter>();
-                tile.AddComponent<MeshRenderer>();
-            }
 
-            tile.name = $"Lod{key.LodLevel}_x{key.X}_z{key.Z}";
-            tile.transform.position = center;
-
-            var collider = tile.GetComponent<MeshCollider>();
-            collider.sharedMesh = tileData.Mesh;
-
-            var filter = tile.GetComponent<MeshFilter>();
-            filter.sharedMesh = tileData.Mesh;
-
-            var renderer = tile.GetComponent<MeshRenderer>();
-            renderer.material = tileData.Material;
-
-            usedGameObjects[key] = tile;
+            visibleTiles[key] = tileData;
         }
 
-        public void UpdateTile(TileKey key)
+        public void Update()
         {
+            var planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+
+
+            foreach (var tile in visibleTiles)
+            {
+                var bounds = new Bounds(tile.Key.Center, tile.Value.Mesh.bounds.size);
+
+                if (GeometryUtility.TestPlanesAABB(planes, bounds))
+                {
+                    Graphics.DrawMesh(tile.Value.Mesh, tile.Key.Center, Quaternion.identity, tile.Value.Material, 0);
+                }
+            }
         }
 
         public void RemoveTile(TileKey key)
         {
-            if (!usedGameObjects.TryGetValue(key, out var tile))
+            if (!visibleTiles.ContainsKey(key))
             {
                 throw new InvalidOperationException("Cannot remove a tile which doesn't exist.");
             }
 
-            if (freeGameObjects.Count == Capacity)
+            if (usedGameObjects.TryGetValue(key, out var tile))
             {
-                DestroyGameObject(tile);
+                if (freeGameObjects.Count == Capacity)
+                {
+                    DestroyGameObject(tile);
+                    usedGameObjects.Remove(key);
+                    return;
+                }
+
+                tile.name = "Unused terrain";
+
+                var collider = tile.GetComponent<MeshCollider>();
+                collider.sharedMesh = null;
+
                 usedGameObjects.Remove(key);
-                return;
+                freeGameObjects.Add(tile);
             }
 
-            tile.name = "Unused terrain";
-
-            var collider = tile.GetComponent<MeshCollider>();
-            collider.sharedMesh = null;
-
-            var filter = tile.GetComponent<MeshFilter>();
-            filter.mesh = null;
-
-            usedGameObjects.Remove(key);
-            freeGameObjects.Add(tile); 
+            visibleTiles.Remove(key);
         }
 
         private void DestroyGameObject(GameObject gameObject)
@@ -108,3 +121,4 @@ namespace Playground
         }
     }
 }
+

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Playground
 {
     public struct TileKey
@@ -5,5 +7,6 @@ namespace Playground
         public int LodLevel;
         public int X;
         public int Z;
+        public Vector3 Center;
     }
 }
