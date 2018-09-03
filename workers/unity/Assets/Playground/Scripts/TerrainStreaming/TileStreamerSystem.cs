@@ -60,11 +60,11 @@ namespace Playground
 
         protected override void OnUpdate()
         {
-            var tree = new KdTree<Transform>(true);
+            var tree = new List<Vector3>();
 
             for (int i = 0; i < transformData.Length; i++)
             {
-                tree.Add(transformData.Transform[i]);
+                tree.Add(transformData.Transform[i].position);
             }
 
             manager.Update(tree);

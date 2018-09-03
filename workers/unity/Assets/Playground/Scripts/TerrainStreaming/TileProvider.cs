@@ -39,6 +39,7 @@ namespace Playground
                     Mesh = Resources.Load<Mesh>(name),
                     Material = Resources.Load<Material>(name)
                 };
+
                 tileCache.Set(key, tileData);
             }
 

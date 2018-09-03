@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Playground
@@ -15,7 +16,7 @@ namespace Playground
                 terrainSettings.TileProviderCacheSize);
         }
 
-        public void Update(KdTree<Transform> transforms)
+        public void Update(List<Vector3> points)
         {
             var lodLevel = terrainSettings.LodSettings.Count - 1;
             var step = terrainSettings.LodSettings[lodLevel].TileSize;
@@ -24,20 +25,19 @@ namespace Playground
             {
                 for (var z = 0f; z < terrainSettings.TerrainSize; z += step)
                 {
-                    LoadTile(lodLevel, x, z, transforms);
+                    LoadTile(lodLevel, x, z, points);
                 }
             }
 
             tileProvider.UnloadUnused();
         }
 
-        private void LoadTile(int lodLevel, float x, float z, KdTree<Transform> transforms)
+        private void LoadTile(int lodLevel, float x, float z, List<Vector3> points)
         {
             var lodSetting = terrainSettings.LodSettings[lodLevel];
 
             var center = lodSetting.GetCenter(new Vector3(x, 0, z)) + terrainSettings.Origin;
-            var closest = transforms.FindClosest(center);
-            var distance = Distance(center, closest.position);
+            var distance = ClosestPointDistance(points, center);
 
             if (distance > terrainSettings.MaxDistance)
             {
@@ -46,10 +46,10 @@ namespace Playground
 
             if (distance < lodSetting.MinDistance)
             {
-                LoadTile(lodLevel - 1, x, z, transforms);
-                LoadTile(lodLevel - 1, x + lodSetting.TileSize / 2, z, transforms);
-                LoadTile(lodLevel - 1, x, z + lodSetting.TileSize / 2, transforms);
-                LoadTile(lodLevel - 1, x + lodSetting.TileSize / 2, z + lodSetting.TileSize / 2, transforms);
+                LoadTile(lodLevel - 1, x, z, points);
+                LoadTile(lodLevel - 1, x + lodSetting.TileSize / 2, z, points);
+                LoadTile(lodLevel - 1, x, z + lodSetting.TileSize / 2, points);
+                LoadTile(lodLevel - 1, x + lodSetting.TileSize / 2, z + lodSetting.TileSize / 2, points);
             }
             else
             {
@@ -64,9 +64,17 @@ namespace Playground
             }
         }
 
-        private static float Distance(Vector3 a, Vector3 b)
+        private static float ClosestPointDistance(List<Vector3> points, Vector3 center)
         {
-            return Mathf.Sqrt((a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z));
+            var distance = float.MaxValue;
+
+            foreach (var point in points)
+            {
+                var newDistance = Mathf.Sqrt(Mathf.Pow(point.x - center.x, 2) + Mathf.Pow(point.z - center.z, 2));
+                distance = Mathf.Min(newDistance, distance);
+            }
+
+            return distance;
         }
 
         public void Dispose()

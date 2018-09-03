@@ -60,7 +60,7 @@ namespace Playground
             var view = SceneView.lastActiveSceneView;
             if (view != null)
             {
-                manager.Update(new KdTree<Transform>(true) { view.camera.transform });
+                manager.Update(new List<Vector3> { view.camera.transform.position });
             }
         }
     }
