@@ -23,8 +23,6 @@ namespace Playground
 
         public void LoadTile(TileKey key, Vector3 center)
         {
-            var name = nameResolver.GetNameForTile(key);
-
             if (visibleTiles.ContainsKey(key))
             {
                 visibleTiles[key] = lastCleaned;
@@ -34,6 +32,8 @@ namespace Playground
 
             if (!tileCache.TryGetValue(key, out var tileData))
             {
+                var name = nameResolver.GetNameForTile(key);
+
                 tileData = new TileData
                 {
                     Mesh = Resources.Load<Mesh>(name),

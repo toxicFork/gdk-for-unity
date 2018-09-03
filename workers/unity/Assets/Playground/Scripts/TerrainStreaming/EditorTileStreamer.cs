@@ -15,6 +15,7 @@ namespace Playground
             {
                 TerrainSize = 1000,
                 MaxDistance = 2000,
+                TileProviderCacheSize = 20,
                 Origin = new Vector3(0, 0, 0),
                 TileVizualizer = new DefaultTileVizualizer(),
                 NameResolver = new DefaultNameResolver(),

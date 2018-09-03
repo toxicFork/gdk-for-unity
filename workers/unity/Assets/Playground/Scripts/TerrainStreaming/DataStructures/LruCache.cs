@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Playground
 {
@@ -12,6 +13,11 @@ namespace Playground
 
         public LruCache(int capacity)
         {
+            if (capacity == 0)
+            {
+                Debug.LogWarning("The capacity of the LruCache should be more than 0");
+            }
+
             Capacity = capacity;
             cache = new Dictionary<TKey, CacheNode<TKey, TValue>>(capacity);
 
@@ -48,22 +54,24 @@ namespace Playground
             }
             else
             {
-                var node = new CacheNode<TKey, TValue>
+                CacheNode<TKey, TValue> node;
+                if (Capacity == Size)
                 {
-                    Key = key,
-                    Value = value
-                };
+                    cache.Remove(tail.Prev.Key);
+                    node = RemoveLastNode();
+                    Size--;
+                }
+                else
+                {
+                    node = new CacheNode<TKey, TValue>();
+                }
+
+                node.Key = key;
+                node.Value = value;
 
                 cache.Add(key, node);
                 LinkAtFront(node);
-
                 Size++;
-                if (Capacity < Size)
-                {
-                    cache.Remove(tail.Prev.Key);
-                    RemoveLastNode();
-                    Size--;
-                }
             }
         }
 
@@ -78,12 +86,13 @@ namespace Playground
         }
 
 
-        private void RemoveLastNode()
+        private CacheNode<TKey, TValue> RemoveLastNode()
         {
             var tailPrev = tail.Prev;
             var tailPrevPrev = tailPrev.Prev;
             tailPrevPrev.Next = tail;
             tail.Prev = tailPrevPrev;
+            return tailPrev;
         }
 
 
