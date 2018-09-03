@@ -22,6 +22,7 @@ namespace Playground
             world.GetOrCreateManager<UpdateUISystem>();
             world.GetOrCreateManager<PlayerCommandsSystem>();
             world.GetOrCreateManager<MetricSendSystem>();
+            world.GetOrCreateManager<TileStreamerSystem>();
         }
 
         public static void AddGameLogicSystems(World world)
@@ -37,7 +38,7 @@ namespace Playground
             world.GetOrCreateManager<MetricSendSystem>();
             world.GetOrCreateManager<ProcessScoresSystem>();
             world.GetOrCreateManager<CollisionProcessSystem>();
-            world.GetOrCreateManager<LodLoader>();
+            world.GetOrCreateManager<TileStreamerSystem>();
         }
 
         private static void AddLifecycleSystems(World world)

@@ -1,0 +1,66 @@
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+namespace Playground
+{
+    [ExecuteInEditMode]
+    public class EditorTileStreamer : MonoBehaviour
+    {
+        private TerrainManager manager;
+
+        void OnEnable()
+        {
+            var settings = new TerrainSettings
+            {
+                TerrainSize = 1000,
+                MaxDistance = 2000,
+                Origin = new Vector3(0, 0, 0),
+                TileVizualizer = new DefaultTileVizualizer(),
+                NameResolver = new DefaultNameResolver(),
+                LodSettings = new List<LodSetting>
+                {
+                    new LodSetting
+                    {
+                        TileSize = 125,
+                        MinDistance = 0
+                    },
+                    new LodSetting
+                    {
+                        TileSize = 250,
+                        MinDistance = 250
+                    },
+                    new LodSetting
+                    {
+                        TileSize = 500,
+                        MinDistance = 500
+                    },
+                    new LodSetting
+                    {
+                        TileSize = 1000,
+                        MinDistance = 1000
+                    }
+                }
+            };
+
+            manager = new TerrainManager(settings);
+
+            EditorApplication.update += UIChange;
+        }
+
+        void OnDisable()
+        {
+            EditorApplication.update -= UIChange;
+            manager.Dispose();
+        }
+
+        void UIChange()
+        {
+            var view = SceneView.lastActiveSceneView;
+            if (view != null)
+            {
+                manager.Update(new KdTree<Transform>(true) { view.camera.transform });
+            }
+        }
+    }
+}

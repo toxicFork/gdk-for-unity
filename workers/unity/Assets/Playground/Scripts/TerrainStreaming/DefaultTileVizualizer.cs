@@ -5,18 +5,13 @@ using Object = UnityEngine.Object;
 
 namespace Playground
 {
-    public class SimpleTileVizualizer : ITileVizualizer
+    public class DefaultTileVizualizer : ITileVizualizer
     {
         private readonly List<GameObject> freeGameObjects = new List<GameObject>();
         private readonly Dictionary<TileKey, GameObject> usedGameObjects = new Dictionary<TileKey, GameObject>();
-        private readonly int capacity;
+        private const int Capacity = 20;
 
-        public SimpleTileVizualizer(int capacity)
-        {
-            this.capacity = capacity;
-        }
-
-        public void VisualizeTile(TileKey key, TileData tileData, Vector3 center)
+        public void LoadTile(TileKey key, TileData tileData, Vector3 center)
         {
             if (usedGameObjects.ContainsKey(key))
             {
@@ -52,6 +47,10 @@ namespace Playground
             usedGameObjects[key] = tile;
         }
 
+        public void UpdateTile(TileKey key)
+        {
+        }
+
         public void RemoveTile(TileKey key)
         {
             if (!usedGameObjects.TryGetValue(key, out var tile))
@@ -59,9 +58,9 @@ namespace Playground
                 throw new InvalidOperationException("Cannot remove a tile which doesn't exist.");
             }
 
-            if (freeGameObjects.Count == capacity)
+            if (freeGameObjects.Count == Capacity)
             {
-                Object.Destroy(tile);
+                DestroyGameObject(tile);
                 usedGameObjects.Remove(key);
                 return;
             }
@@ -75,7 +74,37 @@ namespace Playground
             filter.mesh = null;
 
             usedGameObjects.Remove(key);
-            freeGameObjects.Add(tile);
+            freeGameObjects.Add(tile); 
+        }
+
+        private void DestroyGameObject(GameObject gameObject)
+        {
+#if UNITY_EDITOR
+            if (Application.isEditor)
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+            else
+#endif
+            {
+                Object.Destroy(gameObject);
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var tile in usedGameObjects)
+            {
+                DestroyGameObject(tile.Value);
+            }
+
+            foreach (var tile in freeGameObjects)
+            {
+                DestroyGameObject(tile);
+            }
+
+            usedGameObjects.Clear();
+            freeGameObjects.Clear();
         }
     }
 }
