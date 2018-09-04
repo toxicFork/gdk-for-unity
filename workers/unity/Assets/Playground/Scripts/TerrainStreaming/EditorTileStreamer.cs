@@ -8,6 +8,7 @@ namespace Playground
     public class EditorTileStreamer : MonoBehaviour
     {
         private TerrainManager manager;
+        private Vector3 lastCameraPosition;
 
         void OnEnable()
         {
@@ -15,7 +16,8 @@ namespace Playground
             {
                 TerrainSize = 1000,
                 MaxDistance = 2000,
-                TileProviderCacheSize = 20,
+                TileProviderCacheSize = 50,
+                CacheTerrainAheadDistance = 20,
                 Origin = new Vector3(0, 0, 0),
                 TileVizualizer = new DefaultTileVizualizer(),
                 NameResolver = new DefaultNameResolver(),
@@ -60,8 +62,10 @@ namespace Playground
             var view = SceneView.lastActiveSceneView;
             if (view != null)
             {
-                manager.Update(new List<Vector3> { view.camera.transform.position });
+                lastCameraPosition = view.camera.transform.position;
             }
+
+            manager.Update(new List<Vector3> { lastCameraPosition });
         }
     }
 }

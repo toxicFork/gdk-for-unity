@@ -31,6 +31,11 @@ namespace Playground
             tail.Next = null;
         }
 
+        public bool ContainsKey(TKey key)
+        {
+            return cache.ContainsKey(key);
+        }
+
         public bool TryGetValue(TKey key, out TValue value)
         {
             if (cache.TryGetValue(key, out var node))

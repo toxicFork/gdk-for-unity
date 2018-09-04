@@ -53,16 +53,45 @@ namespace Playground
             }
             else
             {
-                var key = new TileKey
-                {
-                    LodLevel = lodLevel,
-                    X = (int) (x / lodSetting.TileSize),
-                    Z = (int) (z / lodSetting.TileSize),
-                    Center = center
-                };
-
+                var key = GenerateKey(lodLevel, x, z, lodSetting);
                 tileProvider.LoadTile(key);
             }
+
+            if (lodSetting.MinDistance <= distance &&
+                distance < lodSetting.MinDistance + terrainSettings.CacheTerrainAheadDistance && lodLevel != 0)
+            {
+                for (int i = 0; i <= 1; i++)
+                {
+                    for (int j = 0; j <= 1; j++)
+                    {
+                        var newX = x + i * lodSetting.TileSize / 2;
+                        var newZ = z + j * lodSetting.TileSize / 2;
+                        var subLodSetting = terrainSettings.LodSettings[lodLevel - 1];
+
+                        var key = GenerateKey(lodLevel - 1, newX, newZ, subLodSetting);
+
+                        tileProvider.LoadIntoCache(key);
+                    }
+                }
+            }
+
+            if (lodSetting.MinDistance - terrainSettings.CacheTerrainAheadDistance <= distance &&
+                distance < lodSetting.MinDistance)
+            {
+                var key = GenerateKey(lodLevel, x, z, lodSetting);
+                tileProvider.LoadIntoCache(key);
+            }
+        }
+
+        private TileKey GenerateKey(int lodLevel, float x, float z, LodSetting lodSetting)
+        {
+            return new TileKey
+            {
+                LodLevel = lodLevel,
+                X = (int) (x / lodSetting.TileSize),
+                Z = (int) (z / lodSetting.TileSize),
+                Center = lodSetting.GetCenter(new Vector3(x, 0, z)) + terrainSettings.Origin
+            };
         }
 
         private static float ClosestPointDistance(List<Vector3> points, Vector3 center)

@@ -10,6 +10,8 @@ namespace Playground
         public Vector3 Origin;
 
         public int TileProviderCacheSize;
+        public float CacheTerrainAheadDistance;
+
         public ITileVizualizer TileVizualizer;
         public INameResolver NameResolver;
 

@@ -26,7 +26,8 @@ namespace Playground
             {
                 TerrainSize = 1000,
                 MaxDistance = 2000,
-                TileProviderCacheSize = 20,
+                TileProviderCacheSize = 50,
+                CacheTerrainAheadDistance = 20,
                 Origin = World.GetExistingManager<WorkerSystem>().Origin,
                 TileVizualizer = new DefaultTileVizualizer(),
                 NameResolver = new DefaultNameResolver(),

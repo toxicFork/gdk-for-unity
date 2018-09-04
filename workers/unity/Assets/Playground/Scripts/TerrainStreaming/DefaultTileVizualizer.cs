@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -55,7 +54,7 @@ namespace Playground
             {
                 var bounds = new Bounds(tile.Key.Center, tile.Value.Mesh.bounds.size);
 
-                if (GeometryUtility.TestPlanesAABB(planes, bounds))
+                if (Application.isEditor || GeometryUtility.TestPlanesAABB(planes, bounds))
                 {
                     Graphics.DrawMesh(tile.Value.Mesh, tile.Key.Center, Quaternion.identity, tile.Value.Material, 0);
                 }
@@ -68,6 +67,8 @@ namespace Playground
             {
                 throw new InvalidOperationException("Cannot remove a tile which doesn't exist.");
             }
+
+            visibleTiles.Remove(key);
 
             if (usedGameObjects.TryGetValue(key, out var tile))
             {
@@ -86,8 +87,6 @@ namespace Playground
                 usedGameObjects.Remove(key);
                 freeGameObjects.Add(tile);
             }
-
-            visibleTiles.Remove(key);
         }
 
         private void DestroyGameObject(GameObject gameObject)
