@@ -7,7 +7,8 @@
         "Unity.Entities",
         "Unity.Entities.Hybrid",
         "Unity.Mathematics",
-        "Improbable.Gdk.Generated"
+        "Improbable.Gdk.Generated",
+        "Improbable.Gdk.TerrainStreaming"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public struct TileData
     {

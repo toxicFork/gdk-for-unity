@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public class TileStreamerSystem : ComponentSystem
     {

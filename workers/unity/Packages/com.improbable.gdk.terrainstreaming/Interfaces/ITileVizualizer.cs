@@ -1,6 +1,6 @@
 using System;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public interface ITileVizualizer : IDisposable
     {

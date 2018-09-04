@@ -1,5 +1,6 @@
 using Improbable.Gdk.PlayerLifecycle;
 using Improbable.Gdk.TransformSynchronization;
+using Improbable.Gdk.TerrainStreaming;
 using Unity.Entities;
 
 namespace Playground
@@ -14,6 +15,7 @@ namespace Playground
             AddLifecycleSystems(world);
             TransformSynchronizationSystemHelper.AddSystems(world);
             PlayerLifecycleConfig.AddClientSystems(world);
+            TerrainStreamingConfig.AddSystems(world);
             world.GetOrCreateManager<ProcessColorChangeSystem>();
             world.GetOrCreateManager<LocalPlayerInputSync>();
             world.GetOrCreateManager<InitCameraSystem>();
@@ -22,7 +24,6 @@ namespace Playground
             world.GetOrCreateManager<UpdateUISystem>();
             world.GetOrCreateManager<PlayerCommandsSystem>();
             world.GetOrCreateManager<MetricSendSystem>();
-            world.GetOrCreateManager<TileStreamerSystem>();
         }
 
         public static void AddGameLogicSystems(World world)
@@ -30,6 +31,7 @@ namespace Playground
             AddLifecycleSystems(world);
             TransformSynchronizationSystemHelper.AddSystems(world);
             PlayerLifecycleConfig.AddServerSystems(world);
+            TerrainStreamingConfig.AddSystems(world);
             world.GetOrCreateManager<CubeMovementSystem>();
             world.GetOrCreateManager<MoveLocalPlayerSystem>();
             world.GetOrCreateManager<TriggerColorChangeSystem>();
@@ -38,7 +40,6 @@ namespace Playground
             world.GetOrCreateManager<MetricSendSystem>();
             world.GetOrCreateManager<ProcessScoresSystem>();
             world.GetOrCreateManager<CollisionProcessSystem>();
-            world.GetOrCreateManager<TileStreamerSystem>();
         }
 
         private static void AddLifecycleSystems(World world)

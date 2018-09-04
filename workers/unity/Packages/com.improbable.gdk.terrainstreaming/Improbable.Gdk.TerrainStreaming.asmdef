@@ -1,3 +1,8 @@
 ﻿{
-	"name": "Improbable.Gdk.TerrainStreaming"
+    "name": "Improbable.Gdk.TerrainStreaming",
+    "references": [
+        "Unity.Entities",
+        "Unity.Entities.Hybrid",
+        "Improbable.Gdk.Core"
+    ]
 }

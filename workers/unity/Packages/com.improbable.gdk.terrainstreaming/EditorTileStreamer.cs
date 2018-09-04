@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     [ExecuteInEditMode]
     public class EditorTileStreamer : MonoBehaviour

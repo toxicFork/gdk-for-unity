@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public class TerrainManager : IDisposable
     {

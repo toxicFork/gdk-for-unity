@@ -1,4 +1,4 @@
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public interface INameResolver
     {

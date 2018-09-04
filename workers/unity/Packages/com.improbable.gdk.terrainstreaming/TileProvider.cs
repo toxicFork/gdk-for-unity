@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public class TileProvider : IDisposable
     {

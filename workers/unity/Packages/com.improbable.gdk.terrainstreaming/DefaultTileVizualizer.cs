@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Playground
+namespace Improbable.Gdk.TerrainStreaming
 {
     public class DefaultTileVizualizer : ITileVizualizer
     {
