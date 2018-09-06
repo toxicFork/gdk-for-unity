@@ -12,15 +12,12 @@ namespace Improbable.Gdk.TerrainStreaming
 
         void OnEnable()
         {
-            var settings = new TerrainSettings
+            var streamingSettings = new StreamingSettings
             {
                 TerrainSize = 1000,
                 MaxDistance = 2000,
-                TileProviderCacheSize = 50,
                 CacheTerrainAheadDistance = 20,
                 Origin = new Vector3(0, 0, 0),
-                TileVizualizer = new DefaultTileVizualizer(),
-                NameResolver = new DefaultNameResolver(),
                 LodSettings = new List<LodSetting>
                 {
                     new LodSetting
@@ -46,7 +43,14 @@ namespace Improbable.Gdk.TerrainStreaming
                 }
             };
 
-            manager = new TerrainManager(settings);
+            var managerSettings = new TileProviderSettings
+            {
+                TileProviderCacheSize = 50,
+                TileVizualizer = new DefaultTileVizualizer(),
+                NameResolver = new DefaultNameResolver(),
+            };
+
+            manager = new TerrainManager(managerSettings, streamingSettings);
 
             EditorApplication.update += UIChange;
         }

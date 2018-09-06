@@ -22,15 +22,12 @@ namespace Improbable.Gdk.TerrainStreaming
         {
             base.OnCreateManager(capacity);
 
-            var settings = new TerrainSettings
+            var streamingSettings = new StreamingSettings
             {
                 TerrainSize = 1000,
                 MaxDistance = 2000,
-                TileProviderCacheSize = 50,
                 CacheTerrainAheadDistance = 20,
                 Origin = World.GetExistingManager<WorkerSystem>().Origin,
-                TileVizualizer = new DefaultTileVizualizer(),
-                NameResolver = new DefaultNameResolver(),
                 LodSettings = new List<LodSetting>
                 {
                     new LodSetting
@@ -56,7 +53,14 @@ namespace Improbable.Gdk.TerrainStreaming
                 }
             };
 
-            manager = new TerrainManager(settings);
+            var managerSettings = new TileProviderSettings
+            {
+                TileProviderCacheSize = 50,
+                TileVizualizer = new DefaultTileVizualizer(),
+                NameResolver = new DefaultNameResolver(),
+            };
+
+            manager = new TerrainManager(managerSettings, streamingSettings);
         }
 
         protected override void OnUpdate()

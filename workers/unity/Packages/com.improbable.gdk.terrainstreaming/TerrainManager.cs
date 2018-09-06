@@ -7,23 +7,22 @@ namespace Improbable.Gdk.TerrainStreaming
     public class TerrainManager : IDisposable
     {
         private readonly TileProvider tileProvider;
-        private readonly TerrainSettings terrainSettings;
+        private StreamingSettings streamingSettings;
 
-        public TerrainManager(TerrainSettings settings)
+        public TerrainManager(TileProviderSettings tileProviderSettings, StreamingSettings streamingSettings)
         {
-            terrainSettings = settings;
-            tileProvider = new TileProvider(terrainSettings.TileVizualizer, terrainSettings.NameResolver,
-                terrainSettings.TileProviderCacheSize);
+            this.streamingSettings = streamingSettings;
+            tileProvider = new TileProvider(tileProviderSettings);
         }
 
         public void Update(List<Vector3> points)
         {
-            var lodLevel = terrainSettings.LodSettings.Count - 1;
-            var step = terrainSettings.LodSettings[lodLevel].TileSize;
+            var lodLevel = streamingSettings.LodSettings.Count - 1;
+            var step = streamingSettings.LodSettings[lodLevel].TileSize;
 
-            for (var x = 0f; x < terrainSettings.TerrainSize; x += step)
+            for (var x = 0f; x < streamingSettings.TerrainSize; x += step)
             {
-                for (var z = 0f; z < terrainSettings.TerrainSize; z += step)
+                for (var z = 0f; z < streamingSettings.TerrainSize; z += step)
                 {
                     LoadTile(lodLevel, x, z, points);
                 }
@@ -32,14 +31,19 @@ namespace Improbable.Gdk.TerrainStreaming
             tileProvider.Update();
         }
 
+        public void UpdateStreamingSettings(StreamingSettings streamingSettings)
+        {
+            this.streamingSettings = streamingSettings;
+        }
+
         private void LoadTile(int lodLevel, float x, float z, List<Vector3> points)
         {
-            var lodSetting = terrainSettings.LodSettings[lodLevel];
+            var lodSetting = streamingSettings.LodSettings[lodLevel];
 
-            var center = lodSetting.GetCenter(new Vector3(x, 0, z)) + terrainSettings.Origin;
+            var center = lodSetting.GetCenter(new Vector3(x, 0, z)) + streamingSettings.Origin;
             var distance = ClosestPointDistance(points, center);
 
-            if (distance > terrainSettings.MaxDistance)
+            if (distance > streamingSettings.MaxDistance)
             {
                 return;
             }
@@ -58,7 +62,7 @@ namespace Improbable.Gdk.TerrainStreaming
             }
 
             if (lodSetting.MinDistance <= distance &&
-                distance < lodSetting.MinDistance + terrainSettings.CacheTerrainAheadDistance && lodLevel != 0)
+                distance < lodSetting.MinDistance + streamingSettings.CacheTerrainAheadDistance && lodLevel != 0)
             {
                 for (int i = 0; i <= 1; i++)
                 {
@@ -66,7 +70,7 @@ namespace Improbable.Gdk.TerrainStreaming
                     {
                         var newX = x + i * lodSetting.TileSize / 2;
                         var newZ = z + j * lodSetting.TileSize / 2;
-                        var subLodSetting = terrainSettings.LodSettings[lodLevel - 1];
+                        var subLodSetting = streamingSettings.LodSettings[lodLevel - 1];
 
                         var key = GenerateKey(lodLevel - 1, newX, newZ, subLodSetting);
 
@@ -75,7 +79,7 @@ namespace Improbable.Gdk.TerrainStreaming
                 }
             }
 
-            if (lodSetting.MinDistance - terrainSettings.CacheTerrainAheadDistance <= distance &&
+            if (lodSetting.MinDistance - streamingSettings.CacheTerrainAheadDistance <= distance &&
                 distance < lodSetting.MinDistance)
             {
                 var key = GenerateKey(lodLevel, x, z, lodSetting);
@@ -90,7 +94,7 @@ namespace Improbable.Gdk.TerrainStreaming
                 LodLevel = lodLevel,
                 X = (int) (x / lodSetting.TileSize),
                 Z = (int) (z / lodSetting.TileSize),
-                Center = lodSetting.GetCenter(new Vector3(x, 0, z)) + terrainSettings.Origin
+                Center = lodSetting.GetCenter(new Vector3(x, 0, z)) + streamingSettings.Origin
             };
         }
 

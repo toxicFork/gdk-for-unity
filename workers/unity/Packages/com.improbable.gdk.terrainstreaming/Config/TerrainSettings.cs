@@ -3,18 +3,19 @@ using UnityEngine;
 
 namespace Improbable.Gdk.TerrainStreaming
 {
-    public struct TerrainSettings
+    public struct TileProviderSettings
+    {
+        public int TileProviderCacheSize;
+        public ITileVizualizer TileVizualizer;
+        public INameResolver NameResolver;
+    }
+
+    public struct StreamingSettings
     {
         public float TerrainSize;
         public float MaxDistance;
         public Vector3 Origin;
-
-        public int TileProviderCacheSize;
         public float CacheTerrainAheadDistance;
-
-        public ITileVizualizer TileVizualizer;
-        public INameResolver NameResolver;
-
         public List<LodSetting> LodSettings;
     }
 }

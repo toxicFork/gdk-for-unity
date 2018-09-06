@@ -14,11 +14,11 @@ namespace Improbable.Gdk.TerrainStreaming
         private readonly INameResolver nameResolver;
         private int lastCleaned;
 
-        public TileProvider(ITileVizualizer vizualizer, INameResolver nameResolver, int capacity)
+        public TileProvider(TileProviderSettings tileProviderSettings)
         {
-            this.vizualizer = vizualizer;
-            this.nameResolver = nameResolver;
-            tileCache = new LruCache<TileKey, TileData>(capacity);
+            vizualizer = tileProviderSettings.TileVizualizer;
+            nameResolver = tileProviderSettings.NameResolver;
+            tileCache = new LruCache<TileKey, TileData>(tileProviderSettings.TileProviderCacheSize);
             visibleTiles = new Dictionary<TileKey, int>();
             tilesToCache = new Queue<TileKey>();
         }
