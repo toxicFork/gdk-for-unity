@@ -35,7 +35,7 @@ namespace Improbable
                 new Package(tempPath, "worker_sdk", "c-dynamic-arm64-clang_libcpp-android", $"{nativeDependenciesPath}/Android/arm64", new List<string> {"include"}),
                 new Package(tempPath, "worker_sdk", "c-dynamic-armeabi_v7a-clang_libcpp-android", $"{nativeDependenciesPath}/Android/armeabi-v7a", new List<string> {"include"}),
                 new Package(tempPath, "worker_sdk", "c-dynamic-x86-android-clang_libcpp-android", $"{nativeDependenciesPath}/Android/x86", new List<string> {"include"}),
-                new Package(tempPath, "worker_sdk", "csharp_core", $"{managedDependenciesPath}/OSX"),
+                new Package(tempPath, "worker_sdk", "csharp_core", $"{managedDependenciesPath}/Common"),
                 new Package(tempPath, "worker_sdk", "csharp_core-static", $"{pluginsPath}/iOS"),
                 new Package(tempPath, "schema", "standard_library", schemaStdLibDir),
                 new Package(tempPath, "tools", "schema_compiler-x86_64-win32", $"{tempPath}/schema_compiler", null, OSPlatform.Windows),
