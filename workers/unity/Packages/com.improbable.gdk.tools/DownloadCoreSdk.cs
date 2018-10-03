@@ -31,7 +31,10 @@ namespace Improbable.Gdk.Tools
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Linux", new List<BuildTarget> { BuildTarget.StandaloneLinuxUniversal }, editorCompatible: true),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Windows/x86_64", new List<BuildTarget> { BuildTarget.StandaloneWindows64 }, editorCompatible: true),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Windows/x86", new List<BuildTarget> { BuildTarget.StandaloneWindows }, false),
-            PluginDirectoryCompatibility.CreateAllCompatible("Assets/Plugins/Improbable/Sdk/Common"),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Android", new List<BuildTarget> { BuildTarget.Android }, editorCompatible: false),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/iOS", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: false),
+            PluginDirectoryCompatibility.CreateWithIncompatiblePlatforms("Assets/Plugins/Improbable/Sdk/Common", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: true),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Sdk/iOS", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: false),
         };
 
         [MenuItem(DownloadForceMenuItem, false, DownloadForcePriority)]
