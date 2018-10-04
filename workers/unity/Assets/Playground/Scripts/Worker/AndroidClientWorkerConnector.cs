@@ -18,8 +18,9 @@ namespace Playground.Worker
             }
 
             return hostIp;
-#endif
+#else
             throw new NotImplementedException("Incompatible platform: Please use Android");
+#endif
         }
     }
 }
