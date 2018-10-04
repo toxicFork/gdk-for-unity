@@ -56,7 +56,6 @@ namespace Improbable.Gdk.BuildSystem
 
                 foreach (var wantedWorkerType in wantedWorkerTypes)
                 {
-                    Debug.Log($"Wanted Worker Type:{wantedWorkerType}");
                     BuildWorkerForEnvironment(wantedWorkerType, buildEnvironment);
                 }
             }
