@@ -30,8 +30,10 @@ namespace Improbable.Gdk.Tools
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/OSX", new List<BuildTarget> { BuildTarget.StandaloneOSX }, editorCompatible: true),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Linux", new List<BuildTarget> { BuildTarget.StandaloneLinuxUniversal }, editorCompatible: true),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Windows/x86_64", new List<BuildTarget> { BuildTarget.StandaloneWindows64 }, editorCompatible: true),
-            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Windows/x86", new List<BuildTarget> { BuildTarget.StandaloneWindows }, false),
-            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Android", new List<BuildTarget> { BuildTarget.Android }, editorCompatible: false),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Windows/x86", new List<BuildTarget> { BuildTarget.StandaloneWindows }, editorCompatible: false),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Android/arm64", new List<BuildTarget> { BuildTarget.Android }, editorCompatible: false, extraPlatformData: new List<(BuildTarget, string, string)> { (BuildTarget.Android, "CPU", "ARM64") }),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Android/armeabi-v7a", new List<BuildTarget> { BuildTarget.Android }, editorCompatible: false, extraPlatformData: new List<(BuildTarget, string, string)> { (BuildTarget.Android, "CPU", "ARMv7") }),
+            PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/Android/x86", new List<BuildTarget> { BuildTarget.Android }, editorCompatible: false, extraPlatformData: new List<(BuildTarget, string, string)> { (BuildTarget.Android, "CPU", "x86") }),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Core/iOS", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: false),
             PluginDirectoryCompatibility.CreateWithIncompatiblePlatforms("Assets/Plugins/Improbable/Sdk/Common", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: true),
             PluginDirectoryCompatibility.CreateWithCompatiblePlatforms("Assets/Plugins/Improbable/Sdk/iOS", new List<BuildTarget> { BuildTarget.iOS }, editorCompatible: false),
@@ -187,6 +189,11 @@ namespace Improbable.Gdk.Tools
                         }
                     }
 
+                    foreach (var (buildTarget, key, value) in pluginDirectoryCompatibility.ExtraPlatformData)
+                    {
+                        plugin.SetPlatformData(buildTarget, key, value);
+                    }
+
                     plugin.SaveAndReimport();
                 }
             }
@@ -196,34 +203,37 @@ namespace Improbable.Gdk.Tools
         {
             public static PluginDirectoryCompatibility CreateWithCompatiblePlatforms(string path,
                 List<BuildTarget> compatiblePlatforms,
-                bool editorCompatible)
+                bool editorCompatible,
+                List<(BuildTarget, string, string)> extraPlatformData = null)
             {
-                return new PluginDirectoryCompatibility(path, false, compatiblePlatforms, null, editorCompatible);
+                return new PluginDirectoryCompatibility(path, false, compatiblePlatforms, null, editorCompatible, extraPlatformData);
             }
 
             public static PluginDirectoryCompatibility CreateWithIncompatiblePlatforms(string path,
                 List<BuildTarget> incompatiblePlatforms,
                 bool editorCompatible)
             {
-                return new PluginDirectoryCompatibility(path, true, null, incompatiblePlatforms, editorCompatible);
+                return new PluginDirectoryCompatibility(path, true, null, incompatiblePlatforms, editorCompatible, null);
             }
 
             public static PluginDirectoryCompatibility CreateAllCompatible(string path)
             {
-                return new PluginDirectoryCompatibility(path, true, null, null, true);
+                return new PluginDirectoryCompatibility(path, true, null, null, true, null);
             }
 
             private PluginDirectoryCompatibility(string path,
                 bool anyPlatformCompatible,
                 List<BuildTarget> compatiblePlatforms,
                 List<BuildTarget> incompatiblePlatforms,
-                bool editorCompatible)
+                bool editorCompatible,
+                List<(BuildTarget, string, string)> extraPlatformData)
             {
                 Path = path;
                 AnyPlatformCompatible = anyPlatformCompatible;
                 CompatiblePlatforms = compatiblePlatforms ?? new List<BuildTarget>();
                 IncompatiblePlatforms = incompatiblePlatforms ?? new List<BuildTarget>();
                 EditorCompatible = editorCompatible;
+                ExtraPlatformData = extraPlatformData ?? new List<(BuildTarget, string, string)>();
             }
 
             public string Path { get; }
@@ -231,6 +241,7 @@ namespace Improbable.Gdk.Tools
             public List<BuildTarget> CompatiblePlatforms { get; }
             public List<BuildTarget> IncompatiblePlatforms { get; }
             public bool EditorCompatible { get; }
+            public List<(BuildTarget, string, string)> ExtraPlatformData { get; }
         }
 
         private static string[] ConstructArguments()
