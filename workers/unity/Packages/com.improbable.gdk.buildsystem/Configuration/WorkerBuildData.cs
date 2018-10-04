@@ -26,7 +26,8 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                 { BuildTarget.StandaloneWindows64, "Windows" },
                 { BuildTarget.StandaloneLinux64, "Linux" },
                 { BuildTarget.StandaloneOSX, "Mac" },
-                { BuildTarget.Android, "Android" }
+                { BuildTarget.Android, "Android" },
+                { BuildTarget.iOS, "iOS" }
             };
 
         private static readonly Dictionary<BuildTarget, string> BuildPlatformExtensions =
@@ -36,7 +37,8 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                 { BuildTarget.StandaloneWindows64, ".exe" },
                 { BuildTarget.StandaloneLinux64, "" },
                 { BuildTarget.StandaloneOSX, "" },
-                { BuildTarget.Android, ".apk" }
+                { BuildTarget.Android, ".apk" },
+                { BuildTarget.iOS, "" }
             };
 
         public WorkerBuildData(string workerType, BuildTarget buildTarget)

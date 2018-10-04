@@ -45,10 +45,10 @@ namespace Improbable.Gdk.BuildSystem.Configuration
 
         private void OnEnable()
         {
-            // if (!isInitialised)
-            // {
-            //     ResetToDefault();
-            // }
+            if (!isInitialised)
+            {
+                ResetToDefault();
+            }
 
             if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(this)))
             {
@@ -74,6 +74,32 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                     {
                         BuildPlatforms = SpatialBuildPlatforms.Linux,
                         BuildOptions = BuildOptions.EnableHeadlessMode
+                    }
+                },
+                new WorkerBuildConfiguration
+                {
+                    WorkerType = "AndroidClient",
+                    LocalBuildConfig = new BuildEnvironmentConfig
+                    {
+                        BuildPlatforms = SpatialBuildPlatforms.Android,
+                        BuildOptions = BuildOptions.Development
+                    },
+                    CloudBuildConfig = new BuildEnvironmentConfig
+                    {
+                        BuildPlatforms = SpatialBuildPlatforms.Android
+                    }
+                },
+                new WorkerBuildConfiguration
+                {
+                    WorkerType = "IosClient",
+                    LocalBuildConfig = new BuildEnvironmentConfig
+                    {
+                        BuildPlatforms = SpatialBuildPlatforms.iOS,
+                        BuildOptions = BuildOptions.Development
+                    },
+                    CloudBuildConfig = new BuildEnvironmentConfig
+                    {
+                        BuildPlatforms = SpatialBuildPlatforms.iOS
                     }
                 }
             };

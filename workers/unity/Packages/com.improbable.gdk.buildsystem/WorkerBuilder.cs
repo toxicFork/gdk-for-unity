@@ -133,6 +133,11 @@ namespace Improbable.Gdk.BuildSystem
                 result.Add(BuildTarget.Android);
             }
 
+            if ((actualPlatforms & SpatialBuildPlatforms.iOS) != 0)
+            {
+                result.Add(BuildTarget.iOS);
+            }
+
             return result.ToArray();
         }
 
