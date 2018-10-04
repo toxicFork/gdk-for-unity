@@ -130,7 +130,6 @@ namespace Improbable.Gdk.BuildSystem
 
             if ((actualPlatforms & SpatialBuildPlatforms.Android) != 0)
             {
-                Debug.Log("I went into actualPlatforms android stuff");
                 result.Add(BuildTarget.Android);
             }
 

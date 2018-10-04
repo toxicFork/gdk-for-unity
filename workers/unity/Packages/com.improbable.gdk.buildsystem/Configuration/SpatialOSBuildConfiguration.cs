@@ -45,10 +45,10 @@ namespace Improbable.Gdk.BuildSystem.Configuration
 
         private void OnEnable()
         {
-            if (!isInitialised)
-            {
-                ResetToDefault();
-            }
+            // if (!isInitialised)
+            // {
+            //     ResetToDefault();
+            // }
 
             if (!string.IsNullOrEmpty(AssetDatabase.GetAssetPath(this)))
             {
