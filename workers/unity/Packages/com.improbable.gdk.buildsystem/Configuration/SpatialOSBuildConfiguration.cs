@@ -8,12 +8,12 @@ namespace Improbable.Gdk.BuildSystem.Configuration
 {
     [CreateAssetMenu(fileName = "SpatialOS Build Configuration", menuName = EditorConfig.BuildConfigurationMenu)]
     public class SpatialOSBuildConfiguration : ScriptableSingleton<SpatialOSBuildConfiguration>
-    {        
-        [SerializeField] public List<WorkerBuildConfiguration> WorkerBuildConfigurations = 
+    {
+        [SerializeField] public List<WorkerBuildConfiguration> WorkerBuildConfigurations =
             new List<WorkerBuildConfiguration>();
-        
+
         [SerializeField] private bool isInitialised;
-        
+
         public BuildEnvironmentConfig GetEnvironmentConfigForWorker(string workerType, BuildEnvironment environment)
         {
             var config = WorkerBuildConfigurations.FirstOrDefault(x => x.WorkerType == workerType);
@@ -32,7 +32,7 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                 .Select(AssetDatabase.GetAssetPath)
                 .ToArray();
         }
-        
+
         internal void UpdateEditorScenesForBuild()
         {
             EditorBuildSettings.scenes =
@@ -60,24 +60,20 @@ namespace Improbable.Gdk.BuildSystem.Configuration
         {
             WorkerBuildConfigurations = new List<WorkerBuildConfiguration>
             {
+                new WorkerBuildConfiguration
                 {
-                    new WorkerBuildConfiguration
-                    {
-                        WorkerType = "UnityClient",
-                        LocalBuildConfig = new BuildEnvironmentConfig { BuildOptions = BuildOptions.Development },
-                    }
+                    WorkerType = "UnityClient",
+                    LocalBuildConfig = new BuildEnvironmentConfig { BuildOptions = BuildOptions.Development },
                 },
+                new WorkerBuildConfiguration
                 {
-                    new WorkerBuildConfiguration
+                    WorkerType = "UnityGameLogic",
+                    LocalBuildConfig =
+                        new BuildEnvironmentConfig { BuildOptions = BuildOptions.EnableHeadlessMode },
+                    CloudBuildConfig = new BuildEnvironmentConfig
                     {
-                        WorkerType = "UnityGameLogic",
-                        LocalBuildConfig =
-                            new BuildEnvironmentConfig { BuildOptions = BuildOptions.EnableHeadlessMode },
-                        CloudBuildConfig = new BuildEnvironmentConfig
-                        {
-                            BuildPlatforms = SpatialBuildPlatforms.Linux,
-                            BuildOptions = BuildOptions.EnableHeadlessMode
-                        }
+                        BuildPlatforms = SpatialBuildPlatforms.Linux,
+                        BuildOptions = BuildOptions.EnableHeadlessMode
                     }
                 }
             };

@@ -10,13 +10,13 @@ namespace Improbable.Gdk.BuildSystem.Configuration
         public readonly string WorkerType;
 
         public string PackageName => $"{WorkerType}@{BuildTargetName}";
-        
+
         public string BuildScratchDirectory =>
             Path.Combine(EditorPaths.BuildScratchDirectory, PackageName, ExecutableName);
-        
+
         private string BuildTargetName => BuildTargetNames[buildTarget];
         private string ExecutableName => PackageName + BuildPlatformExtensions[buildTarget];
-        
+
         private readonly BuildTarget buildTarget;
 
         private static readonly Dictionary<BuildTarget, string> BuildTargetNames =
@@ -25,7 +25,8 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                 { BuildTarget.StandaloneWindows, "Windows" },
                 { BuildTarget.StandaloneWindows64, "Windows" },
                 { BuildTarget.StandaloneLinux64, "Linux" },
-                { BuildTarget.StandaloneOSX, "Mac" }
+                { BuildTarget.StandaloneOSX, "Mac" },
+                { BuildTarget.Android, "Android" }
             };
 
         private static readonly Dictionary<BuildTarget, string> BuildPlatformExtensions =
@@ -34,7 +35,8 @@ namespace Improbable.Gdk.BuildSystem.Configuration
                 { BuildTarget.StandaloneWindows, ".exe" },
                 { BuildTarget.StandaloneWindows64, ".exe" },
                 { BuildTarget.StandaloneLinux64, "" },
-                { BuildTarget.StandaloneOSX, "" }
+                { BuildTarget.StandaloneOSX, "" },
+                { BuildTarget.Android, ".apk" }
             };
 
         public WorkerBuildData(string workerType, BuildTarget buildTarget)
