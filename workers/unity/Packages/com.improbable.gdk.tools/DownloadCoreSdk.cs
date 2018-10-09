@@ -71,6 +71,7 @@ namespace Improbable.Gdk.Tools
             }
 
             Download();
+            AssetDatabase.Refresh();
         }
 
         private static void RemoveMarkerFile()
@@ -171,12 +172,7 @@ namespace Improbable.Gdk.Tools
                 EditorApplication.UnlockReloadAssemblies();
             }
 
-            if (exitCode != 0)
-            {
-                return DownloadResult.Error;
-            }
-
-            return DownloadResult.Success;
+            return exitCode == 0 ? DownloadResult.Success : DownloadResult.Error;
         }
 
         /// <summary>
