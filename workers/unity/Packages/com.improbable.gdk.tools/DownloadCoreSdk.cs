@@ -13,6 +13,26 @@ namespace Improbable.Gdk.Tools
         Error
     }
 
+    internal class PluginPostprocessor : AssetPostprocessor
+    {
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        {
+            var processPlugins = false;
+            foreach (var asset in importedAssets)
+            {
+                if (DownloadCoreSdk.IsImprobablePlugin(asset))
+                {
+                    processPlugins = true;
+                }
+            }
+
+            if (processPlugins)
+            {
+                DownloadCoreSdk.SetPluginsCompatibility();
+            }
+        }
+    }
+
     internal static class DownloadCoreSdk
     {
         private const int DownloadForcePriority = 50;
@@ -51,6 +71,7 @@ namespace Improbable.Gdk.Tools
             }
 
             Download();
+            AssetDatabase.Refresh();
         }
 
         private static void RemoveMarkerFile()
@@ -93,9 +114,14 @@ namespace Improbable.Gdk.Tools
             return !failedPlugins.Any();
         }
 
+        internal static bool IsImprobablePlugin(string assetPath)
+        {
+            return assetPath.StartsWith("Assets/Plugins/Improbable");
+        }
+
         private static bool ShouldCheckPluginForLock(PluginImporter p)
         {
-            if (!p.assetPath.StartsWith("Assets/Plugins/Improbable"))
+            if (!IsImprobablePlugin(p.assetPath))
             {
                 return false;
             }
@@ -146,23 +172,22 @@ namespace Improbable.Gdk.Tools
                 EditorApplication.UnlockReloadAssemblies();
             }
 
-            if (exitCode != 0)
-            {
-                return DownloadResult.Error;
-            }
-
-            AssetDatabase.Refresh();
-            SetPluginsCompatibility();
-            return DownloadResult.Success;
+            return exitCode == 0 ? DownloadResult.Success : DownloadResult.Error;
         }
 
         /// <summary>
         ///     Sets plugin platform compatibility based on directory structure
         /// </summary>
-        private static void SetPluginsCompatibility()
+        internal static void SetPluginsCompatibility()
         {
+            AssetDatabase.StartAssetEditing();
             foreach (var pluginDirectoryCompatibility in PluginsCompatibilityList)
             {
+                if (!Directory.Exists(pluginDirectoryCompatibility.Path))
+                {
+                    continue;
+                }
+
                 var pluginPaths = AssetDatabase.FindAssets("", new[] { pluginDirectoryCompatibility.Path });
                 foreach (var pluginPath in pluginPaths)
                 {
@@ -172,31 +197,60 @@ namespace Improbable.Gdk.Tools
                         continue;
                     }
 
-                    plugin.SetCompatibleWithAnyPlatform(pluginDirectoryCompatibility.AnyPlatformCompatible);
-                    plugin.SetCompatibleWithEditor(pluginDirectoryCompatibility.EditorCompatible);
+                    // We only update options that needs to be updated to avoid reloading plugins that have correct settings
+                    bool pluginCompatibilityUpdated = false;
+                    if (plugin.GetCompatibleWithAnyPlatform() != pluginDirectoryCompatibility.AnyPlatformCompatible)
+                    {
+                        plugin.SetCompatibleWithAnyPlatform(pluginDirectoryCompatibility.AnyPlatformCompatible);
+                        pluginCompatibilityUpdated = true;
+                    }
+
+                    if (plugin.GetCompatibleWithEditor() != pluginDirectoryCompatibility.EditorCompatible)
+                    {
+                        plugin.SetCompatibleWithEditor(pluginDirectoryCompatibility.EditorCompatible);
+                        pluginCompatibilityUpdated = true;
+                    }
+
                     if (pluginDirectoryCompatibility.AnyPlatformCompatible)
                     {
                         foreach (var buildTarget in pluginDirectoryCompatibility.IncompatiblePlatforms)
                         {
-                            plugin.SetExcludeFromAnyPlatform(buildTarget, true);
+                            if (!plugin.GetExcludeFromAnyPlatform(buildTarget))
+                            {
+                                plugin.SetExcludeFromAnyPlatform(buildTarget, true);
+                                pluginCompatibilityUpdated = true;
+                            }
                         }
                     }
                     else
                     {
                         foreach (var buildTarget in pluginDirectoryCompatibility.CompatiblePlatforms)
                         {
-                            plugin.SetCompatibleWithPlatform(buildTarget, true);
+                            if (!plugin.GetCompatibleWithPlatform(buildTarget))
+                            {
+                                plugin.SetCompatibleWithPlatform(buildTarget, true);
+                                pluginCompatibilityUpdated = true;
+                            }
                         }
                     }
 
                     foreach (var (buildTarget, key, value) in pluginDirectoryCompatibility.ExtraPlatformData)
                     {
-                        plugin.SetPlatformData(buildTarget, key, value);
+                        if (plugin.GetPlatformData(buildTarget, key) != value)
+                        {
+                            plugin.SetPlatformData(buildTarget, key, value);
+                            pluginCompatibilityUpdated = true;
+                        }
                     }
 
-                    plugin.SaveAndReimport();
+                    if (pluginCompatibilityUpdated)
+                    {
+                        plugin.SaveAndReimport();
+                    }
                 }
             }
+
+            AssetDatabase.StopAssetEditing();
         }
 
         private class PluginDirectoryCompatibility
