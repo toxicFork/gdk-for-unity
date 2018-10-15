@@ -1,16 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Improbable.Gdk.Mobile;
+using Playground.Worker;
+using Unity.Entities;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class SplashScreenConnect : MonoBehaviour {
+namespace Playground
+{
+    public class SplashScreenConnect : MonoBehaviour
+    {
+        [SerializeField] private GameObject workerPrefab;
+        [SerializeField] private GameObject connectionPanel;
+        [SerializeField] private InputField ipAddressInput;
+        [SerializeField] private Button connectButton;
+        [SerializeField] private Text errorMessage;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+        protected string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
+
+        public void Awake()
+        {
+            ipAddressInput.text = PlayerPrefs.GetString("cachedIp");
+            connectButton.onClick.AddListener(Connect);
+        }
+
+        public void Connect()
+        {
+            var worker = Instantiate(workerPrefab);
+            var connector = worker.GetComponent<MobileWorkerConnector>() as AndroidClientWorkerConnector;
+
+            connector.ConnectNow();
+        }
+    }
 }

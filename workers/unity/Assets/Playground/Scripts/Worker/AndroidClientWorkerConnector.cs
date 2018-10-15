@@ -8,7 +8,7 @@ using Improbable.Gdk.Mobile.Android;
 
 #endif
 
-namespace Playground.Worker
+namespace Playground
 {
     public class AndroidClientWorkerConnector : MobileWorkerConnector
     {
@@ -21,7 +21,7 @@ namespace Playground.Worker
         private GameObject levelInstance;
         private bool connected;
 
-        protected string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
+        private string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
 
         public void Awake()
         {
@@ -32,7 +32,7 @@ namespace Playground.Worker
         public async void Connect()
         {
             errorMessage.text = "";
-            await Connect(WorkerUtils.AndroidClient, new ForwardingDispatcher()).ConfigureAwait(false);
+            await Connect(WorkerUtils.iOSClient, new ForwardingDispatcher()).ConfigureAwait(false);
         }
 
         protected override void HandleWorkerConnectionEstablished()
@@ -60,18 +60,10 @@ namespace Playground.Worker
 
         public override void Dispose()
         {
-            if (levelInstance != null)
-            {
-                Destroy(levelInstance);
-            }
-
             if (connected)
             {
-                Destroy(this);
+                base.Dispose();
             }
-
-            Worker?.Dispose();
-            Worker = null;
         }
 
         protected override string GetHostIp()

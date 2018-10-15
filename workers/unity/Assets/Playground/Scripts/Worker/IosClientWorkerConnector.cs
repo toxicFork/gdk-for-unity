@@ -7,9 +7,9 @@ using Improbable.Gdk.Core;
 using Improbable.Gdk.Mobile;
 using UnityEngine.UI;
 
-namespace Playground.Worker
+namespace Playground
 {
-    public class IosClientWorkerConnector : MobileWorkerConnector
+    public class iOSClientWorker : MobileWorkerConnector
     {
         [SerializeField] private GameObject connectionPanel;
         [SerializeField] private GameObject level;
@@ -31,7 +31,7 @@ namespace Playground.Worker
         public async void Connect()
         {
             errorMessage.text = "";
-            await Connect(WorkerUtils.UnityClient, new ForwardingDispatcher()).ConfigureAwait(false);
+            await Connect(WorkerUtils.iOSClient, new ForwardingDispatcher()).ConfigureAwait(false);
         }
 
         protected override void HandleWorkerConnectionEstablished()
@@ -59,18 +59,10 @@ namespace Playground.Worker
 
         public override void Dispose()
         {
-            if (levelInstance != null)
-            {
-                Destroy(levelInstance);
-            }
-
             if (connected)
             {
-                Destroy(this);
+                base.Dispose();
             }
-
-            Worker?.Dispose();
-            Worker = null;
         }
 
         protected override string GetHostIp()
