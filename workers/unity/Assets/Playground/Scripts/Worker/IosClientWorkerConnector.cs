@@ -20,7 +20,7 @@ namespace Playground
         private GameObject levelInstance;
         private bool connected;
 
-        protected string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
+        private string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
 
         public void Awake()
         {
