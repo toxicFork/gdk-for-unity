@@ -6,27 +6,21 @@ using UnityEngine.UI;
 
 public abstract class AbstractMobileClientWorker : MobileWorkerConnector
 {
-    public GameObject ConnectionPanel;
-    public GameObject Level;
+    [SerializeField] private GameObject connectionPanel;
+    [SerializeField] private GameObject level;
+    [SerializeField] private InputField ipAddressInput;
+    [SerializeField] private Button connectButton;
+    [SerializeField] private Text errorMessage;
 
     private GameObject levelInstance;
     private bool connected;
-    private InputField input;
-    private Button button;
-    private Text errorMessage;
+
+    protected string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
 
     public void Awake()
     {
-        input = ConnectionPanel.transform.Find("ConnectInput").GetComponent<InputField>();
-        button = ConnectionPanel.transform.Find("ConnectButton").GetComponent<Button>();
-        errorMessage = ConnectionPanel.transform.Find("ConnectionError").GetComponent<Text>();
-
-        input.text = PlayerPrefs.GetString("cachedIp");
-    }
-
-    public void Start()
-    {
-        button.onClick.AddListener(Connect);
+        ipAddressInput.text = PlayerPrefs.GetString("cachedIp");
+        connectButton.onClick.AddListener(Connect);
     }
 
     public async void Connect()
@@ -38,16 +32,16 @@ public abstract class AbstractMobileClientWorker : MobileWorkerConnector
     protected override void HandleWorkerConnectionEstablished()
     {
         WorkerUtils.AddClientSystems(Worker.World);
-        if (Level == null)
+        if (level == null)
         {
             return;
         }
 
-        levelInstance = Instantiate(Level, transform);
+        levelInstance = Instantiate(level, transform);
         levelInstance.transform.SetParent(null);
 
         connected = true;
-        ConnectionPanel.SetActive(false);
+        connectionPanel.SetActive(false);
 
         PlayerPrefs.SetString("cachedIp", input.text);
         PlayerPrefs.Save();
