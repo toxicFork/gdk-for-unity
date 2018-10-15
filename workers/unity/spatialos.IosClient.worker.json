@@ -18,7 +18,7 @@
   "bridge": {
     "worker_attribute_set": {
       "attributes": [
-        "UnityClient"
+        "iOSClient"
       ]
     },
     "entity_interest": {
@@ -38,7 +38,7 @@
         "command": "echo",
         "arguments": [
           "+workerType",
-          "IosClient",
+          "iOSClient",
           "+infraServicesUrl",
           "http://127.0.0.1:21000",
           "+projectName",
@@ -55,7 +55,7 @@
           "+assemblyName",
           "local_assembly",
           "+workerType",
-          "IosClient",
+          "iOSClient",
           "+infraServicesUrl",
           "http://127.0.0.1:21000",
           "+projectName",
