@@ -76,7 +76,8 @@ namespace Playground
 
             return hostIp;
 #else
-            throw new NotImplementedException("Incompatible platform: Please use iOS");
+            throw new PlatformNotSupportedException(
+                "This method is only defined for the iOS platform. Please check your build settings.");
 #endif
         }
     }

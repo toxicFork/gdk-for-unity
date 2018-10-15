@@ -77,7 +77,8 @@ namespace Playground
 
             return hostIp;
 #else
-            return null;
+            throw new PlatformNotSupportedException(
+                "This method is only defined for the Android platform. Please check your build settings.");
 #endif
         }
     }
