@@ -49,7 +49,7 @@ namespace Improbable.Gdk.BuildSystem
 
                 var workerTypesArg =
                     CommandLineUtility.GetCommandLineValue(commandLine, BuildWorkerTypes,
-                        "UnityClient,UnityGameLogic,AndroidClient");
+                        "UnityClient,UnityGameLogic,AndroidClient,IosClient");
 
                 var wantedWorkerTypes = workerTypesArg.Split(',');
                 LocalLaunch.BuildConfig();
