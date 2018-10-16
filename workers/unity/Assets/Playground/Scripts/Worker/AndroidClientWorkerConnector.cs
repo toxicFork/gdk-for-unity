@@ -1,18 +1,18 @@
-using System;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.Mobile;
-using UnityEngine;
 #if UNITY_ANDROID
 using Improbable.Gdk.Mobile.Android;
-
 #endif
+using System;
+using UnityEngine;
+
 
 namespace Playground
 {
     public class AndroidClientWorkerConnector : MobileWorkerConnector
     {
         [NonSerialized] public string IpAddress;
-        [NonSerialized] public ConnectionScreen ConnectionScreen;
+        [NonSerialized] public ConnectionScreenController ConnectionScreenController;
 
         [SerializeField] private GameObject level;
 
@@ -25,6 +25,8 @@ namespace Playground
 
         protected override void HandleWorkerConnectionEstablished()
         {
+            ConnectionScreenController.OnSuccess();
+
             WorkerUtils.AddClientSystems(Worker.World);
             if (level == null)
             {
@@ -33,13 +35,11 @@ namespace Playground
 
             levelInstance = Instantiate(level, transform);
             levelInstance.transform.SetParent(null);
-
-            ConnectionScreen.OnSuccess();
         }
 
         protected override void HandleWorkerConnectionFailure()
         {
-            ConnectionScreen.OnConnectionFailed();
+            ConnectionScreenController.OnConnectionFailed();
         }
 
         protected override string GetHostIp()
