@@ -4,6 +4,7 @@ using Improbable.Gdk.Mobile;
 using Improbable.Gdk.Mobile.Android;
 #endif
 using System;
+using Improbable.Worker;
 using UnityEngine;
 
 
@@ -17,6 +18,22 @@ namespace Playground
         [SerializeField] private GameObject level;
 
         private GameObject levelInstance;
+
+        protected override LocatorConfig GetLocatorConfig(string workerType)
+        {
+            return new LocatorConfig
+            {
+                LocatorParameters =
+                {
+                    CredentialsType = LocatorCredentialsType.LoginToken,
+                    ProjectName = "unity_gdk",
+                    LoginToken = new LoginTokenCredentials
+                    {
+                        Token = "OAJOAFOWAJFOWAJFOAW"
+                    }
+                }
+            };
+        }
 
         public async void TryConnect()
         {
