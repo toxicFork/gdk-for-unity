@@ -1,8 +1,7 @@
+using System;
 using Improbable.Gdk.Core;
 using Improbable.Gdk.Mobile;
 using UnityEngine;
-using System;
-using UnityEngine.UI;
 #if UNITY_ANDROID
 using Improbable.Gdk.Mobile.Android;
 
@@ -12,27 +11,16 @@ namespace Playground
 {
     public class AndroidClientWorkerConnector : MobileWorkerConnector
     {
-        [SerializeField] private GameObject connectionPanel;
+        [NonSerialized] public string IpAddress;
+        [NonSerialized] public ConnectionScreen ConnectionScreen;
+
         [SerializeField] private GameObject level;
-        [SerializeField] private InputField ipAddressInput;
-        [SerializeField] private Button connectButton;
-        [SerializeField] private Text errorMessage;
 
         private GameObject levelInstance;
-        private bool connected;
 
-        private string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
-
-        public void Awake()
+        public async void TryConnect()
         {
-            ipAddressInput.text = PlayerPrefs.GetString("cachedIp");
-            connectButton.onClick.AddListener(Connect);
-        }
-
-        public async void Connect()
-        {
-            errorMessage.text = "";
-            await Connect(WorkerUtils.iOSClient, new ForwardingDispatcher()).ConfigureAwait(false);
+            await Connect(WorkerUtils.AndroidClient, new ForwardingDispatcher()).ConfigureAwait(false);
         }
 
         protected override void HandleWorkerConnectionEstablished()
@@ -46,36 +34,23 @@ namespace Playground
             levelInstance = Instantiate(level, transform);
             levelInstance.transform.SetParent(null);
 
-            connected = true;
-            connectionPanel.SetActive(false);
-
-            PlayerPrefs.SetString("cachedIp", IpAddress);
-            PlayerPrefs.Save();
+            ConnectionScreen.OnSuccess();
         }
 
         protected override void HandleWorkerConnectionFailure()
         {
-            errorMessage.text = "Connection failure. Please check the IP address";
-        }
-
-        public override void Dispose()
-        {
-            if (connected)
-            {
-                base.Dispose();
-            }
+            ConnectionScreen.OnConnectionFailed();
         }
 
         protected override string GetHostIp()
         {
 #if UNITY_ANDROID
-            var hostIp = IpAddress;
-            if (Application.isMobilePlatform && DeviceInfo.IsAndroidStudioEmulator() && hostIp.Equals(string.Empty))
+            if (Application.isMobilePlatform && DeviceInfo.IsAndroidStudioEmulator() && IpAddress.Equals(string.Empty))
             {
                 return DeviceInfo.AndroidStudioEmulatorDefaultCallbackIp;
             }
 
-            return hostIp;
+            return IpAddress;
 #else
             throw new PlatformNotSupportedException(
                 "This method is only defined for the Android platform. Please check your build settings.");

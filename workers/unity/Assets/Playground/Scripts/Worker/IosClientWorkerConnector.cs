@@ -9,8 +9,11 @@ using UnityEngine.UI;
 
 namespace Playground
 {
-    public class iOSClientWorker : MobileWorkerConnector
+    public class iOSClientWorkerConnector : MobileWorkerConnector
     {
+        [NonSerialized] public string IpAddress;
+        [NonSerialized] public ConnectionScreen ConnectionScreen;
+
         [SerializeField] private GameObject connectionPanel;
         [SerializeField] private GameObject level;
         [SerializeField] private InputField ipAddressInput;
@@ -19,8 +22,6 @@ namespace Playground
 
         private GameObject levelInstance;
         private bool connected;
-
-        private string IpAddress => ipAddressInput != null ? ipAddressInput.text : null;
 
         public void Awake()
         {
