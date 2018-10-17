@@ -18,6 +18,12 @@ namespace Playground
 
         [SerializeField] private GameObject level;
 
+        // Fields needed to do cloud deployments
+        [SerializeField] private bool useLocator;
+        [SerializeField] private string projectName;
+        [SerializeField] private string deploymentName;
+        [SerializeField] private string loginToken;
+
         private GameObject levelInstance;
 
         protected override LocatorConfig GetLocatorConfig(string workerType)
@@ -27,11 +33,11 @@ namespace Playground
                 LocatorParameters =
                 {
                     CredentialsType = LocatorCredentialsType.LoginToken,
-                    ProjectName = "ENTER PROJECT NAME HERE",
+                    ProjectName = projectName,
                     LoginToken = new LoginTokenCredentials
                     {
-                        Token =
-                            "ENTER TOKEN HERE"
+                        Token = loginToken
+
                     }
                 },
                 WorkerType = workerType,
@@ -41,12 +47,12 @@ namespace Playground
 
         protected override bool ShouldUseLocator()
         {
-            return true;
+            return useLocator;
         }
 
         protected override string SelectDeploymentName(DeploymentList deployments)
         {
-            return "ENTER DEPLOYMENT NAME HERE";
+            return deploymentName;
         }
 
         public async void TryConnect()

@@ -54,3 +54,7 @@ MonoBehaviour:
   MaxConnectionAttempts: 3
   UseExternalIp: 1
   level: {fileID: 1652884293046250, guid: 849b7fe21c599e842ae89f79f70c0f6d, type: 2}
+  useLocator: 0
+  projectName: unity_gdk
+  deploymentName: 
+  loginToken: 
