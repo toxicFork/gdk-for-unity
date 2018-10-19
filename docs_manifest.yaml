@@ -1,0 +1,9 @@
+short_name: "gdk_for_unity"
+docs_root: "docs"
+asset_root: "docs/assets"
+
+dependencies:
+    - github_org: "improbable"
+      github_name: "everything"
+      hash: "3b46f46048648e3aca0602f28986eb11de7b8227"
+      url: "https://docs.improbable.io/reference/latest"
