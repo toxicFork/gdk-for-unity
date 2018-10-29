@@ -40,7 +40,8 @@ namespace Playground
         private struct Data
         {
             public readonly int Length;
-            public ComponentDataArray<CameraInput> CameraInput;
+            [ReadOnly] public ComponentDataArray<LocalInputComponent> LocalInput;
+            public ComponentDataArray<CameraInput> SpatialOSCameraInput;
             public ComponentDataArray<CameraTransform> CameraTransform;
             [ReadOnly] public ComponentArray<Rigidbody> RigidBody;
         }
@@ -51,20 +52,20 @@ namespace Playground
         {
             for (var i = 0; i < data.Length; i++)
             {
-                var input = UpdateCameraInput(data.CameraInput[i]);
+                var input = UpdateCameraInput(data.SpatialOSCameraInput[i], data.LocalInput[i]);
                 var transform = UpdateCameraTransform(input, data.RigidBody[i].position);
 
                 UpdateCamera(transform);
 
-                data.CameraInput[i] = input;
+                data.SpatialOSCameraInput[i] = input;
                 data.CameraTransform[i] = transform;
             }
         }
 
-        private static CameraInput UpdateCameraInput(CameraInput input)
+        private static CameraInput UpdateCameraInput(CameraInput input, LocalInputComponent localInput)
         {
-            var x = input.X + Input.GetAxis("Mouse X");
-            var y = input.Y - Input.GetAxis("Mouse Y");
+            var x = input.X + localInput.RightStick.x;
+            var y = input.Y - localInput.RightStick.y;
             var distance = input.Distance + Input.GetAxis("Mouse ScrollWheel") * ZoomScale;
 
             x %= 360;
