@@ -36,9 +36,10 @@ namespace Playground
         private struct PlayerData
         {
             public readonly int Length;
+            [ReadOnly] public ComponentDataArray<LocalInputComponent> LocalInput;
             [ReadOnly] public ComponentDataArray<SpatialEntityId> SpatialEntity;
             [ReadOnly] public ComponentDataArray<Authoritative<PlayerInput.Component>> PlayerInputAuthority;
-            public ComponentDataArray<Launcher.CommandSenders.LaunchEntity> Sender;
+            [ReadOnly] public ComponentDataArray<Launcher.CommandSenders.LaunchEntity> Sender;
         }
 
         [Inject] private PlayerData playerData;
@@ -56,11 +57,13 @@ namespace Playground
             }
 
             PlayerCommand command;
-            if (Input.GetMouseButtonDown(0))
+            var input = playerData.LocalInput[0];
+            
+            if (input.ShootSmall)
             {
                 command = PlayerCommand.LaunchSmall;
             }
-            else if (Input.GetMouseButtonDown(1))
+            else if (input.ShootLarge)
             {
                 command = PlayerCommand.LaunchLarge;
             }
