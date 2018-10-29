@@ -20,7 +20,8 @@ namespace Playground
         private struct PlayerInputData
         {
             public readonly int Length;
-            public ComponentDataArray<PlayerInput.Component> PlayerInput;
+            public ComponentDataArray<LocalInputComponent> LocalInput;
+            public ComponentDataArray<PlayerInput.Component> SpatialOSPlayerInput;
             public ComponentDataArray<CameraTransform> CameraTransform;
             public ComponentDataArray<Authoritative<PlayerInput.Component>> PlayerInputAuthority;
         }
@@ -33,25 +34,26 @@ namespace Playground
         {
             for (var i = 0; i < playerInputData.Length; i++)
             {
+                var localInput = playerInputData.LocalInput[i];
                 var cameraTransform = playerInputData.CameraTransform[i];
                 var forward = cameraTransform.Rotation * Vector3.up;
                 var right = cameraTransform.Rotation * Vector3.right;
-                var input = Input.GetAxisRaw("Horizontal") * right + Input.GetAxisRaw("Vertical") * forward;
-                var isShiftDown = Input.GetKey(KeyCode.LeftShift);
+                var input = localInput.LeftStick.x * right + localInput.LeftStick.y * forward;
+                var running = localInput.Running;
 
-                var oldPlayerInput = playerInputData.PlayerInput[i];
+                var oldPlayerInput = playerInputData.SpatialOSPlayerInput[i];
 
                 if (Math.Abs(oldPlayerInput.Horizontal - input.x) > MinInputChange
                     || Math.Abs(oldPlayerInput.Vertical - input.z) > MinInputChange
-                    || oldPlayerInput.Running != isShiftDown)
+                    || oldPlayerInput.Running != running)
                 {
                     var newPlayerInput = new PlayerInput.Component
                     {
                         Horizontal = input.x,
                         Vertical = input.z,
-                        Running = isShiftDown
+                        Running = running
                     };
-                    playerInputData.PlayerInput[i] = newPlayerInput;
+                    playerInputData.SpatialOSPlayerInput[i] = newPlayerInput;
                 }
             }
         }
