@@ -23,7 +23,20 @@ namespace Playground
                 iOSClient
             };
 
-        public static void AddClientSystems(World world)
+        public static void AddMobileClientSystems(World world, VirtualJoystick movementJoystick,
+            VirtualJoystick cameraJoystick)
+        {
+            AddCommonClientSystems(world);
+            world.CreateManager<MobilePlayerInputSystem>(movementJoystick, cameraJoystick);
+        }
+
+        public static void AddDesktopClientSystems(World world)
+        {
+            AddCommonClientSystems(world);
+            world.GetOrCreateManager<DesktopPlayerInputSystem>();
+        }
+
+        private static void AddCommonClientSystems(World world)
         {
             AddLifecycleSystems(world);
             TransformSynchronizationHelper.AddClientSystems(world);
@@ -31,6 +44,7 @@ namespace Playground
             GameObjectRepresentationHelper.AddSystems(world);
             GameObjectCreationHelper.EnableStandardGameObjectCreation(world);
             world.GetOrCreateManager<ProcessColorChangeSystem>();
+            world.GetOrCreateManager<InitInputSystem>();
             world.GetOrCreateManager<LocalPlayerInputSync>();
             world.GetOrCreateManager<MoveLocalPlayerSystem>();
             world.GetOrCreateManager<InitCameraSystem>();

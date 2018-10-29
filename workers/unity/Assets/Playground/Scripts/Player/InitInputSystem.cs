@@ -6,7 +6,7 @@ namespace Playground
     [DisableAutoCreation]
     [UpdateInGroup(typeof(SpatialOSUpdateGroup))]
     [UpdateBefore(typeof(LocalPlayerInputSync))]
-    public class AddLocalInputSystem : ComponentSystem
+    public class InitInputSystem : ComponentSystem
     {
         private struct PlayerInputData
         {
@@ -21,7 +21,7 @@ namespace Playground
         {
             for (var i = 0; i < playerInputData.Length; i++)
             {
-                PostUpdateCommands.AddComponent(playerInputData.Entity[i], typeof(LocalInputComponent));
+                PostUpdateCommands.AddComponent(playerInputData.Entity[i], new LocalInputComponent());
             }
 
             Enabled = false;

@@ -14,6 +14,8 @@ namespace Playground
         public string IpAddress { get; set; }
         public ConnectionScreenController ConnectionScreenController { get; set; }
 
+        [SerializeField] private VirtualJoystick movementJoystick;
+        [SerializeField] private VirtualJoystick cameraJoystick;
         [SerializeField] private GameObject level;
 
         private GameObject levelInstance;
@@ -26,7 +28,7 @@ namespace Playground
         protected override void HandleWorkerConnectionEstablished()
         {
             ConnectionScreenController.OnConnectionSucceeded();
-            WorkerUtils.AddClientSystems(Worker.World);
+            WorkerUtils.AddMobileClientSystems(Worker.World, movementJoystick, cameraJoystick);
 
             if (level == null)
             {
