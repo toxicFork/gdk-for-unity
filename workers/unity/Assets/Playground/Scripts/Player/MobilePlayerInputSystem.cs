@@ -51,6 +51,10 @@ namespace Playground
                 input.ShootSmall = touches == 1;
                 input.ShootLarge = touches >= 2;
                 inputData.PlayerInput[i] = input;
+                Debug.Log($"Movement Joystick {movementJoystick}");
+                Debug.Log($"Camera Joystick {cameraJoystick}");
+                Debug.Log($"Movement Joystick {movementJoystick.InputDirection}");
+                Debug.Log($"Camera Joystick {cameraJoystick.InputDirection}");
             }
         }
 

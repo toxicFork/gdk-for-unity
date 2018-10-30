@@ -14,11 +14,22 @@ namespace Playground
         public string IpAddress { get; set; }
         public ConnectionScreenController ConnectionScreenController { get; set; }
 
-        [SerializeField] private VirtualJoystick movementJoystick;
-        [SerializeField] private VirtualJoystick cameraJoystick;
+        [SerializeField] private GameObject virtualJoysticks;
+        [SerializeField] private GameObject movementJoystickContainer;
+        [SerializeField] private GameObject cameraJoystickContainer;
         [SerializeField] private GameObject level;
 
         private GameObject levelInstance;
+        private VirtualJoystick movementJoystick;
+        private VirtualJoystick cameraJoystick;
+
+        public void Awake()
+        {
+            virtualJoysticks = Instantiate(virtualJoysticks);
+
+            movementJoystick = virtualJoysticks.transform.GetChild(0).GetComponent<VirtualJoystick>();
+            cameraJoystick = virtualJoysticks.transform.GetChild(1).GetComponent<VirtualJoystick>();
+        }
 
         public async void TryConnect()
         {

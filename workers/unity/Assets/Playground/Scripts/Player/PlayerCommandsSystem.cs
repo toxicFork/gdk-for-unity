@@ -58,7 +58,7 @@ namespace Playground
 
             PlayerCommand command;
             var input = playerData.LocalInput[0];
-            
+
             if (input.ShootSmall)
             {
                 command = PlayerCommand.LaunchSmall;

@@ -53,4 +53,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxConnectionAttempts: 3
   UseExternalIp: 1
+  virtualJoysticks: {fileID: 1165315289691660, guid: cf729242bc485e94abdf4aa91784030d,
+    type: 2}
+  movementJoystickContainer: {fileID: 1766396343391700, guid: cf729242bc485e94abdf4aa91784030d,
+    type: 2}
+  cameraJoystickContainer: {fileID: 1364729401530712, guid: cf729242bc485e94abdf4aa91784030d,
+    type: 2}
   level: {fileID: 1652884293046250, guid: 849b7fe21c599e842ae89f79f70c0f6d, type: 2}
