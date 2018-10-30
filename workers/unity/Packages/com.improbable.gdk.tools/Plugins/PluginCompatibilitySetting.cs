@@ -10,13 +10,13 @@ namespace Improbable.Gdk.Tools
         Sdk,
     }
 
-    internal enum CPUType
+    internal enum CpuType
     {
         ARMv7,
         Arm64,
         X86_64,
         X86,
-        Unused,
+        Agnostic,
     }
 
     internal struct PluginCompatibilitySetting
@@ -40,19 +40,19 @@ namespace Improbable.Gdk.Tools
                 { BuildTarget.iOS, "iOS" },
             };
 
-        private static readonly Dictionary<CPUType, string> CPUToFolder =
-            new Dictionary<CPUType, string>
+        private static readonly Dictionary<CpuType, string> CpuToFolder =
+            new Dictionary<CpuType, string>
             {
-                { CPUType.ARMv7, "armv7" },
-                { CPUType.Arm64, "arm64" },
-                { CPUType.X86, "x86" },
-                { CPUType.X86_64, "x86_64" },
+                { CpuType.ARMv7, "armv7" },
+                { CpuType.Arm64, "arm64" },
+                { CpuType.X86, "x86" },
+                { CpuType.X86_64, "x86_64" },
             };
 
         public PluginCompatibilitySetting(
             PluginType pluginType,
             BuildTarget compatiblePlatform,
-            CPUType cpuType = CPUType.Unused,
+            CpuType cpuType = CpuType.Agnostic,
             bool compatibleWithEditor = true)
         {
             PluginType = pluginType;
@@ -60,14 +60,14 @@ namespace Improbable.Gdk.Tools
             CompatibleWithAnyPlatform = false;
             CompatibleWithEditor = compatibleWithEditor;
             CompatiblePlatform = compatiblePlatform;
-            if (cpuType == CPUType.Unused)
+            if (cpuType == CpuType.Agnostic)
             {
                 CPU = string.Empty;
             }
             else
             {
-                PluginPath = Path.Combine(PluginPath, CPUToFolder[cpuType]);
-                CPU = CPUToFolder[cpuType];
+                PluginPath = Path.Combine(PluginPath, CpuToFolder[cpuType]);
+                CPU = CpuToFolder[cpuType];
             }
             IncompatiblePlatforms = new List<BuildTarget>();
         }
@@ -84,6 +84,59 @@ namespace Improbable.Gdk.Tools
             CompatibleWithEditor = compatibleWithEditor;
             CompatiblePlatform = 0;
             CPU = string.Empty;
+        }
+
+        internal bool UpdateCompatibleWithAnyPlatform(PluginImporter pluginImporter)
+        {
+            if (CompatibleWithAnyPlatform != pluginImporter.GetCompatibleWithAnyPlatform())
+            {
+                pluginImporter.SetCompatibleWithAnyPlatform(CompatibleWithAnyPlatform);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal bool UpdateCompatibleWithEditor(PluginImporter pluginImporter)
+        {
+
+            if (CompatibleWithEditor != pluginImporter.GetCompatibleWithEditor())
+            {
+                pluginImporter.SetCompatibleWithEditor(CompatibleWithEditor);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal bool UpdateCompatibleWithPlatform(PluginImporter pluginImporter)
+        {
+            if (CompatiblePlatform != 0 && !pluginImporter.GetCompatibleWithPlatform(CompatiblePlatform))
+            {
+                pluginImporter.SetCompatibleWithPlatform(CompatiblePlatform, true);
+                if (!string.IsNullOrEmpty(CPU))
+                {
+                    pluginImporter.SetPlatformData(CompatiblePlatform, "CPU", CPU);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+        internal bool UpdateIncompatibleWithPlatforms(PluginImporter pluginImporter)
+        {
+            var hasUpdated = false;
+            foreach (var incompatiblePlatform in IncompatiblePlatforms)
+            {
+                if (!pluginImporter.GetExcludeFromAnyPlatform(incompatiblePlatform))
+                {
+                    pluginImporter.SetExcludeFromAnyPlatform(incompatiblePlatform, true);
+                    hasUpdated = true;
+                }
+            }
+
+            return hasUpdated;
         }
     }
 }

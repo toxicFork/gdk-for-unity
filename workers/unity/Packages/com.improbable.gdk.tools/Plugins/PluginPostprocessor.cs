@@ -20,27 +20,27 @@ namespace Improbable.Gdk.Tools
             new PluginCompatibilitySetting(
                 PluginType.Core,
                 BuildTarget.StandaloneWindows64,
-                CPUType.X86_64
+                CpuType.X86_64
                 ),
             new PluginCompatibilitySetting(
                 PluginType.Core,
                 BuildTarget.StandaloneWindows,
-                CPUType.X86
+                CpuType.X86
                 ),
             new PluginCompatibilitySetting(
                 PluginType.Core,
                 BuildTarget.Android,
-                CPUType.Arm64
+                CpuType.Arm64
                 ),
             new PluginCompatibilitySetting(
                 PluginType.Core,
                 BuildTarget.Android,
-                CPUType.ARMv7
+                CpuType.ARMv7
                 ),
             new PluginCompatibilitySetting(
                 PluginType.Core,
                 BuildTarget.Android,
-                CPUType.X86
+                CpuType.X86
                 ),
             new PluginCompatibilitySetting(
                 PluginType.Core,
@@ -53,7 +53,7 @@ namespace Improbable.Gdk.Tools
             new PluginCompatibilitySetting(
                 PluginType.Sdk,
                 BuildTarget.iOS,
-                CPUType.Unused,
+                CpuType.Agnostic,
                 compatibleWithEditor: false
                 ),
         };
@@ -89,36 +89,10 @@ namespace Improbable.Gdk.Tools
                     }
 
                     var needsReimport = false;
-                    if (pluginCompatibilitySetting.CompatibleWithAnyPlatform != pluginImporter.GetCompatibleWithAnyPlatform())
-                    {
-                        pluginImporter.SetCompatibleWithAnyPlatform(pluginCompatibilitySetting.CompatibleWithAnyPlatform);
-                        needsReimport = true;
-                    }
-
-                    if (pluginCompatibilitySetting.CompatibleWithEditor != pluginImporter.GetCompatibleWithEditor())
-                    {
-                        pluginImporter.SetCompatibleWithEditor(pluginCompatibilitySetting.CompatibleWithEditor);
-                        needsReimport = true;
-                    }
-
-                    if (pluginCompatibilitySetting.CompatiblePlatform != 0 && !pluginImporter.GetCompatibleWithPlatform(pluginCompatibilitySetting.CompatiblePlatform))
-                    {
-                        pluginImporter.SetCompatibleWithPlatform(pluginCompatibilitySetting.CompatiblePlatform, true);
-                        if (!string.IsNullOrEmpty(pluginCompatibilitySetting.CPU))
-                        {
-                            pluginImporter.SetPlatformData(pluginCompatibilitySetting.CompatiblePlatform, "CPU", pluginCompatibilitySetting.CPU);
-                        }
-                        needsReimport = true;
-                    }
-
-                    foreach (var incompatiblePlatform in pluginCompatibilitySetting.IncompatiblePlatforms)
-                    {
-                        if (!pluginImporter.GetExcludeFromAnyPlatform(incompatiblePlatform))
-                        {
-                            pluginImporter.SetExcludeFromAnyPlatform(incompatiblePlatform, true);
-                            needsReimport = true;
-                        }
-                    }
+                    needsReimport |= pluginCompatibilitySetting.UpdateCompatibleWithAnyPlatform(pluginImporter);
+                    needsReimport |= pluginCompatibilitySetting.UpdateCompatibleWithEditor(pluginImporter);
+                    needsReimport |= pluginCompatibilitySetting.UpdateCompatibleWithPlatform(pluginImporter);
+                    needsReimport |= pluginCompatibilitySetting.UpdateIncompatibleWithPlatforms(pluginImporter);
 
                     if (needsReimport)
                     {
