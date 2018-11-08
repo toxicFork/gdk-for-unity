@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Improbable.Gdk.Core;
 using Improbable.Worker.CInterop;
+using Improbable.Worker;
+using Improbable.Worker.Core;
 using Unity.Entities;
 using UnityEngine;
 using Entity = Unity.Entities.Entity;

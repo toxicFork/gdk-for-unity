@@ -53,7 +53,7 @@ namespace Improbable.Gdk.Core
         /// </summary>
         /// <param name="entityId">The SpatialOS entity ID to check for.</param>
         /// <returns>True, if the SpatialOS entity is checked out on this worker, false otherwise.</returns>
-        public bool HasEntity(EntityId entityId)
+        public bool HasEntity(EntityId entityId) 
         {
             return EntityIdToEntity.ContainsKey(entityId);
         }

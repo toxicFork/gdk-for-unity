@@ -49,6 +49,7 @@
     <T4Files Include="Templates\UnityCommandStorageGenerator.tt" />
     <T4Files Include="Templates\UnityWorkerMenuGenerator.tt" />
     <T4Files Include="Templates\BuildSystemAssemblyGenerator.tt" />
+    <T4Files Include="Templates\UnityCommandSendingSystemGenerator.tt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Partials" />
