@@ -1,0 +1,10 @@
+{
+  "name": "com.improbable.gdk.editordiscovery",
+  "displayName": "SpatialOS GDK Editor Discovery",
+  "version": "0.0.1",
+  "unity": "2018.2",
+  "author": "Improbable Worlds Ltd",
+  "description": "SpatialOS GDK Editor Discovery Module. Made by Improbable.",
+  "dependencies": {
+  }
+}
