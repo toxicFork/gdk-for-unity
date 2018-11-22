@@ -25,7 +25,6 @@ namespace Playground
             public readonly int Length;
             public EntityArray Entity;
             public ComponentDataArray<Launcher.Component> Launcher;
-            public ComponentDataArray<Launchable.CommandSenders.LaunchMe> Senders;
             [ReadOnly] public ComponentDataArray<Launcher.CommandRequests.LaunchEntity> Requests;
         }
 
@@ -34,13 +33,14 @@ namespace Playground
             public readonly int Length;
             public ComponentDataArray<Launchable.Component> Launchable;
             public ComponentArray<Rigidbody> Rigidbody;
-            public ComponentDataArray<Launcher.CommandSenders.IncreaseScore> Sender;
             [ReadOnly] public ComponentDataArray<Launchable.CommandRequests.LaunchMe> Requests;
+            public EntityArray Entity;
         }
 
         [Inject] private CommandSystem commandSender;
         [Inject] private LaunchCommandData launchCommandData;
         [Inject] private LaunchableData launchableData;
+        [Inject] private CommandSystem commandSystem;
 
         protected override void OnUpdate()
         {
@@ -90,7 +90,6 @@ namespace Playground
             {
                 var rigidbody = launchableData.Rigidbody[i];
                 var launchable = launchableData.Launchable[i];
-                var sender = launchableData.Sender[i];
 
                 foreach (var request in launchableData.Requests[i].Requests)
                 {
@@ -102,12 +101,11 @@ namespace Playground
                     );
                     launchable.MostRecentLauncher = info.Player;
 
-                    sender.RequestsToSend.Add(new Launcher.IncreaseScore.Request(
+                    commandSender.SendCommand(new Launcher.IncreaseScore.Request(
                         launchable.MostRecentLauncher,
-                        new ScoreIncreaseRequest(1.0f)));
+                        new ScoreIncreaseRequest(1.0f)), launchableData.Entity[i]);
                 }
 
-                launchableData.Sender[i] = sender;
                 launchableData.Launchable[i] = launchable;
             }
         }

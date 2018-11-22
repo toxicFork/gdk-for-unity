@@ -16,7 +16,7 @@ namespace Improbable.Gdk.PlayerLifecycle
         {
             public readonly int Length;
             [ReadOnly] public ComponentDataArray<PlayerCreator.CommandRequests.CreatePlayer> CreatePlayerRequests;
-            [ReadOnly] public ComponentDataArray<WorldCommands.CreateEntity.CommandSender> CreateEntitySender;
+            public EntityArray Entites;
         }
 
         [Inject] private CreatePlayerData createPlayerData;
@@ -29,6 +29,7 @@ namespace Improbable.Gdk.PlayerLifecycle
         }
 
         [Inject] private EntityCreationResponseData entityCreationResponseData;
+        [Inject] private CommandSystem commandSystem;
 
         private class PlayerCreationRequestContext
         {
@@ -40,7 +41,7 @@ namespace Improbable.Gdk.PlayerLifecycle
             for (var i = 0; i < createPlayerData.Length; i++)
             {
                 var requests = createPlayerData.CreatePlayerRequests[i].Requests;
-                var createEntitySender = createPlayerData.CreateEntitySender[i];
+                //var createEntitySender = createPlayerData.CreateEntitySender[i];
 
                 foreach (var request in requests)
                 {
@@ -51,14 +52,10 @@ namespace Improbable.Gdk.PlayerLifecycle
 
                     var playerEntity = PlayerLifecycleConfig.CreatePlayerEntityTemplate(request.CallerWorkerId,
                         request.Payload.Position);
-                    createEntitySender.RequestsToSend.Add(new WorldCommands.CreateEntity.Request
-                    (
-                        playerEntity,
-                        context: new PlayerCreationRequestContext
-                        {
-                            createPlayerRequest = request
-                        }
-                    ));
+                    commandSystem.SendCommand(
+                        new WorldCommands.CreateEntity.Request(playerEntity,
+                            context: new PlayerCreationRequestContext { createPlayerRequest = request }),
+                        createPlayerData.Entites[i]);
                 }
             }
 

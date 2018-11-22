@@ -25,7 +25,6 @@ namespace Improbable.Gdk.PlayerLifecycle
         private struct SendData
         {
             public readonly int Length;
-            [ReadOnly] public ComponentDataArray<PlayerCreator.CommandSenders.CreatePlayer> RequestSenders;
             [ReadOnly] public ComponentDataArray<ShouldRequestPlayerTag> DenotesShouldRequestPlayer;
             public EntityArray Entities;
         }
@@ -43,6 +42,7 @@ namespace Improbable.Gdk.PlayerLifecycle
         [Inject] private NewEntityData newEntityData;
         [Inject] private SendData sendData;
         [Inject] private ResponseData responseData;
+        [Inject] private CommandSystem commandSystem;
 
         protected override void OnCreateManager()
         {
@@ -63,8 +63,7 @@ namespace Improbable.Gdk.PlayerLifecycle
                 var request = new CreatePlayerRequestType(new Improbable.Vector3f { X = 0, Y = 0, Z = 0 });
                 var createPlayerRequest = new PlayerCreator.CreatePlayer.Request(playerCreatorEntityId, request);
 
-                sendData.RequestSenders[i].RequestsToSend
-                    .Add(createPlayerRequest);
+                commandSystem.SendCommand(createPlayerRequest, sendData.Entities[i]);
                 PostUpdateCommands.RemoveComponent<ShouldRequestPlayerTag>(sendData.Entities[i]);
             }
 

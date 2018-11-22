@@ -37,10 +37,11 @@ namespace Playground
             public readonly int Length;
             [ReadOnly] public ComponentDataArray<SpatialEntityId> SpatialEntity;
             [ReadOnly] public ComponentDataArray<Authoritative<PlayerInput.Component>> PlayerInputAuthority;
-            public ComponentDataArray<Launcher.CommandSenders.LaunchEntity> Sender;
+            public EntityArray Entities;
         }
 
         [Inject] private PlayerData playerData;
+        [Inject] private CommandSystem commandSystem;
 
         protected override void OnUpdate()
         {
@@ -75,7 +76,6 @@ namespace Playground
             }
 
             var rigidBody = info.rigidbody;
-            var sender = playerData.Sender[0];
             var playerId = playerData.SpatialEntity[0].EntityId;
 
             var component = rigidBody.gameObject.GetComponent<LaunchableBehaviour>();
@@ -88,13 +88,11 @@ namespace Playground
             var impactPoint = Vector3f.FromUnityVector(info.point);
             var launchDirection = Vector3f.FromUnityVector(ray.direction);
 
-            sender.RequestsToSend.Add(new Launcher.LaunchEntity.Request(playerId,
+            commandSystem.SendCommand(new Launcher.LaunchEntity.Request(playerId,
                 new LaunchCommandRequest(component.EntityId, impactPoint, launchDirection,
                     command == PlayerCommand.LaunchLarge ? LargeEnergy : SmallEnergy,
                     playerId
-                )));
-
-            playerData.Sender[0] = sender;
+                )), playerData.Entities[0]);
         }
     }
 }
