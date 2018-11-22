@@ -13,6 +13,7 @@ namespace Improbable.Gdk.Subscriptions
         private readonly WorkerSystem workerSystem;
         private readonly SubscriptionSystem subscriptionSystem;
         private readonly EntityManager entityManager;
+        private readonly World world;
 
         private readonly Dictionary<EntityId, HashSet<GameObject>> entityIdToGameObjects =
             new Dictionary<EntityId, HashSet<GameObject>>();
@@ -26,6 +27,8 @@ namespace Improbable.Gdk.Subscriptions
 
         public EntityGameObjectLinker(World world)
         {
+            this.world = world;
+
             entityManager = world.GetOrCreateManager<EntityManager>();
 
             workerSystem = world.GetExistingManager<WorkerSystem>();
@@ -49,7 +52,14 @@ namespace Improbable.Gdk.Subscriptions
         {
             if (!workerSystem.TryGetEntity(entityId, out var entity))
             {
-                throw new ArgumentException("Entity not in view");
+                if (entityId.Id == -1)
+                {
+                    entity = workerSystem.WorkerEntity;
+                }
+                else
+                {
+                    throw new ArgumentException("Entity not in view");
+                }
             }
 
             if (!entityIdToGameObjects.TryGetValue(entityId, out var linkedGameObjects))
@@ -57,6 +67,16 @@ namespace Improbable.Gdk.Subscriptions
                 linkedGameObjects = new HashSet<GameObject>();
                 entityIdToGameObjects.Add(entityId, linkedGameObjects);
             }
+
+
+            // todo remove hack
+
+            gameObject.AddComponent<SpatialOSComponent>();
+            var s = gameObject.GetComponent<SpatialOSComponent>();
+            s.SpatialEntityId = entityId;
+            s.Worker = workerSystem;
+            s.World = world;
+            s.Entity = entity;
 
             linkedGameObjects.Add(gameObject);
 
@@ -130,6 +150,8 @@ namespace Improbable.Gdk.Subscriptions
             {
                 entityIdToGameObjects.Remove(entityId);
             }
+
+            GameObject.Destroy(gameObject.GetComponent<SpatialOSComponent>());
         }
 
         public void UnlinkAllGameObjectsFromEntity(EntityId entityId)
@@ -141,6 +163,7 @@ namespace Improbable.Gdk.Subscriptions
 
             foreach (var gameObject in gameObjectSet)
             {
+                GameObject.Destroy(gameObject.GetComponent<SpatialOSComponent>());
                 if (!gameObjectToInjectors.TryGetValue(gameObject, out var injectors))
                 {
                     continue;

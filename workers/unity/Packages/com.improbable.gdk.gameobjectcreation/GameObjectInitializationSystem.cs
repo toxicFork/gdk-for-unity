@@ -38,20 +38,21 @@ namespace Improbable.Gdk.GameObjectCreation
             [ReadOnly] public SubtractiveComponent<SpatialEntityId> NoSpatialEntityIds;
         }
 
+        public EntityGameObjectLinker Linker;
+
         [Inject] private AddedEntitiesData addedEntitiesData;
         [Inject] private RemovedEntitiesData removedEntitiesData;
 
         [Inject] private WorkerSystem worker;
 
         private readonly IEntityGameObjectCreator gameObjectCreator;
-        private EntityGameObjectLinker linker;
 
         private List<EntityId> entitiesRemoved = new List<EntityId>();
 
         protected override void OnCreateManager()
         {
             base.OnCreateManager();
-            linker = new EntityGameObjectLinker(World);
+            Linker = new EntityGameObjectLinker(World);
         }
 
         public GameObjectInitializationSystem(IEntityGameObjectCreator gameObjectCreator)
@@ -65,7 +66,7 @@ namespace Improbable.Gdk.GameObjectCreation
             {
                 var entity = addedEntitiesData.Entities[i];
                 var spatialEntityId = addedEntitiesData.SpatialEntityIds[i].EntityId;
-                gameObjectCreator.OnEntityCreated(new SpatialOSEntity(entity, EntityManager), linker);
+                gameObjectCreator.OnEntityCreated(new SpatialOSEntity(entity, EntityManager), Linker);
 
                 PostUpdateCommands.AddComponent(entity, new InitializedEntitySystemState
                 {
@@ -79,12 +80,12 @@ namespace Improbable.Gdk.GameObjectCreation
                 var entity = removedEntitiesData.Entities[i];
                 var spatialEntityId = EntityManager.GetComponentData<InitializedEntitySystemState>(entity).EntityId;
                 entitiesToRemove[i] = spatialEntityId;
-                linker.UnlinkAllGameObjectsFromEntity(spatialEntityId);
+                Linker.UnlinkAllGameObjectsFromEntity(spatialEntityId);
 
                 PostUpdateCommands.RemoveComponent<InitializedEntitySystemState>(entity);
             }
 
-            linker.FlushCommandBuffer();
+            Linker.FlushCommandBuffer();
 
             for (var i = 0; i < removedEntitiesData.Length; i++)
             {

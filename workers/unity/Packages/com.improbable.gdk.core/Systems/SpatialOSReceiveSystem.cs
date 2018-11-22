@@ -88,12 +88,12 @@ namespace Improbable.Gdk.Core
             });
             EntityManager.AddComponent(entity, ComponentType.Create<NewlyAddedSpatialOSEntity>());
 
-            // foreach (var AddCommandCompoent in AddAllCommandComponents)
-            // {
-            //     AddCommandCompoent(entity);
-            // }
+            foreach (var AddCommandCompoent in AddAllCommandComponents)
+            {
+                AddCommandCompoent(entity);
+            }
 
-            // WorldCommands.AddWorldCommandRequesters(World, EntityManager, entity);
+            WorldCommands.AddWorldCommandRequesters(World, EntityManager, entity);
             worker.EntityIdToEntity.Add(entityId, entity);
             Profiler.EndSample();
         }
@@ -202,7 +202,7 @@ namespace Improbable.Gdk.Core
         {
             componentSpecificDispatchers.Add(componentDispatcher.ComponentId, componentDispatcher);
             AddAllCommandComponents.Add(componentDispatcher.AddCommandComponents);
-            //componentDispatcher.AddCommandComponents(worker.WorkerEntity);
+            componentDispatcher.AddCommandComponents(worker.WorkerEntity);
         }
 
         private void HandleException(Exception e)

@@ -238,7 +238,7 @@ namespace <#= qualifiedNamespace #>
                     commandSender.CommandListHandle = <#= qualifiedNamespace #>.<#= componentDetails.ComponentName #>.ReferenceTypeProviders.<#= commandDetails.CommandName #>SenderProvider.Allocate(World);
                     commandSender.RequestsToSend = new List<<#= qualifiedNamespace #>.<#= componentDetails.ComponentName #>.<#= commandDetails.CommandName #>.Request>();
 
-                    entityManager.AddComponentData(entity, commandSender);
+                    // entityManager.AddComponentData(entity, commandSender);
 
                     var commandResponder = new <#= qualifiedNamespace #>.<#= componentDetails.ComponentName #>.CommandResponders.<#= commandDetails.CommandName #>();
                     commandResponder.CommandListHandle = <#= qualifiedNamespace #>.<#= componentDetails.ComponentName #>.ReferenceTypeProviders.<#= commandDetails.CommandName #>ResponderProvider.Allocate(World);
@@ -507,6 +507,7 @@ for (var i = 0; i < commandDetailsList.Count; i++) {
         var receivedResponseType = command.CommandName + ".ReceivedResponse";
 
         var commandResponseBufferType = $"{qualifiedNamespace}.{componentDetails.ComponentName}.CommandResponses.{command.CommandName}";
+        var commandResponderBufferType = $"{qualifiedNamespace}.{componentDetails.ComponentName}.CommandResponders.{command.CommandName}";
         var commandRequestBufferType = $"{qualifiedNamespace}.{componentDetails.ComponentName}.CommandRequests.{command.CommandName}";
 #>
         public class <#= command.CommandName #>CommandComponentManager : ICommandComponentManager

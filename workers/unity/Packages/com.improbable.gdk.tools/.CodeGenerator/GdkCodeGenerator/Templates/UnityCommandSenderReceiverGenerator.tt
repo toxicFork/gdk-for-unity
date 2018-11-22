@@ -88,7 +88,11 @@ namespace <#= qualifiedNamespace #>
                 entityIdToSenderSubscriptions.Add(entityId, subscriptions);
             }
 
-            if (workerSystem.TryGetEntity(entityId, out var entity))
+            if (entityId.Id == -1)
+            {
+                subscription.SetAvailable(new <#= componentDetails.ComponentName #>CommandSender(workerSystem.WorkerEntity, world));
+            }
+            else if (workerSystem.TryGetEntity(entityId, out var entity))
             {
                 subscription.SetAvailable(new <#= componentDetails.ComponentName #>CommandSender(entity, world));
             }
@@ -208,7 +212,11 @@ namespace <#= qualifiedNamespace #>
                 entityIdToReceiveSubscriptions.Add(entityId, subscriptions);
             }
 
-            if (workerSystem.TryGetEntity(entityId, out var entity)
+            if (entityId.Id == -1)
+            {
+                subscription.SetAvailable(new <#= componentDetails.ComponentName #>CommandReceiver(world, workerSystem.WorkerEntity, entityId));
+            }
+            else if (workerSystem.TryGetEntity(entityId, out var entity)
                 && entityManager.HasComponent<Authoritative<<#= componentDetails.ComponentName #>.Component>>(entity))
             {
                 entitiesMatchingRequirements.Add(entityId);

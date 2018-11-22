@@ -45,6 +45,10 @@ namespace Improbable.Gdk.GameObjectCreation
 
             if (workerGameObject != null)
             {
+                var linker = world.GetExistingManager<GameObjectInitializationSystem>().Linker;
+
+                linker.LinkGameObjectToSpatialOSEntity(new EntityId(-1), workerGameObject);
+
                 if (!entityManager.HasComponent<OnConnected>(workerSystem.WorkerEntity))
                 {
                     workerSystem.LogDispatcher.HandleLog(LogType.Error, new LogEvent("You cannot set the Worker " +

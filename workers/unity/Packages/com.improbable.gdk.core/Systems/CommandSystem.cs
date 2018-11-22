@@ -8,6 +8,7 @@ namespace Improbable.Gdk.Core
     [DisableAutoCreation]
     [AlwaysUpdateSystem]
     [UpdateInGroup(typeof(SpatialOSSendGroup.InternalSpatialOSSendGroup))]
+    [UpdateAfter(typeof(SpatialOSSendSystem))]
     public class CommandSystem : ComponentSystem
     {
         private readonly List<ICommandManager> managers = new List<ICommandManager>();
