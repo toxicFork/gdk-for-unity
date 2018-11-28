@@ -17,7 +17,6 @@ namespace Improbable.Gdk.GameObjectRepresentation
         private readonly World world;
         private readonly WorkerSystem worker;
         private readonly EntityManager entityManager;
-        private readonly HashSet<Type> gameObjectComponentTypes = new HashSet<Type>();
 
         public EntityGameObjectLinker(World world, WorkerSystem worker)
         {
@@ -65,28 +64,6 @@ namespace Improbable.Gdk.GameObjectRepresentation
             else // worker entity
             {
                 spatialEntityId = WorkerEntityId;
-            }
-
-            gameObjectComponentTypes.Clear();
-            foreach (var component in gameObject.GetComponents<Component>())
-            {
-                if (ReferenceEquals(component, null))
-                {
-                    continue;
-                }
-
-                var componentType = component.GetType();
-                if (gameObjectComponentTypes.Contains(componentType))
-                {
-                    worker.LogDispatcher.HandleLog(LogType.Warning, new LogEvent(
-                            "GameObject contains multiple instances of the same component type. Only one instance of each component type will be added to the corresponding ECS entity.")
-                        .WithField("EntityId", spatialEntityId)
-                        .WithField("ComponentType", componentType));
-                    continue;
-                }
-
-                gameObjectComponentTypes.Add(componentType);
-                viewCommandBuffer.AddComponent(entity, component.GetType(), component);
             }
 
             viewCommandBuffer.AddComponent(entity, new GameObjectReference { GameObject = gameObject });
