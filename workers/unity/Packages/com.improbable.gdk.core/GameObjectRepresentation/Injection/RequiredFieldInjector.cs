@@ -51,7 +51,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
             return workerTypeRequirementsForBehaviours[behaviourType] != null || fieldInfoCache[behaviourType].Count > 0;
         }
 
-        public Dictionary<InjectableId, IInjectable[]> InjectAllRequiredFields(MonoBehaviour behaviour, Entity entity)
+        public Dictionary<InjectableId, IInjectable[]> InjectAllRequiredFields(MonoBehaviour behaviour, Entity entity, Entity workerEntity)
         {
             var behaviourType = behaviour.GetType();
             EnsureLoaded(behaviourType);
@@ -63,7 +63,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
                 var injectables = new IInjectable[fields.Length];
                 for (var i = 0; i < fields.Length; i++)
                 {
-                    injectables[i] = Inject(behaviour, id, entity, fields[i]);
+                    injectables[i] = Inject(behaviour, id, entity, workerEntity, fields[i]);
                 }
 
                 createdInjectables[id] = injectables;
@@ -72,9 +72,9 @@ namespace Improbable.Gdk.GameObjectRepresentation
             return createdInjectables;
         }
 
-        private IInjectable Inject(MonoBehaviour behaviour, InjectableId injectableId, Entity entity, FieldInfo field)
+        private IInjectable Inject(MonoBehaviour behaviour, InjectableId injectableId, Entity entity, Entity workerEntity, FieldInfo field)
         {
-            var injectable = injectableFactory.CreateInjectable(injectableId, entity);
+            var injectable = injectableFactory.CreateInjectable(injectableId, entity, workerEntity);
             field.SetValue(behaviour, injectable);
             return injectable;
         }

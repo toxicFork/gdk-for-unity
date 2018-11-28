@@ -169,7 +169,7 @@ namespace Improbable.Gdk.Core.Commands
                 [InjectableId(InjectableType.WorldCommandResponseHandler, InjectableId.NullComponentId)]
                 private class WorldCommandResponseHandlerCreator : IInjectableCreator
                 {
-                    public IInjectable CreateInjectable(Entity entity, EntityManager entityManager,
+                    public IInjectable CreateInjectable(Entity entity, Entity workerEntity, EntityManager entityManager,
                         ILogDispatcher logDispatcher)
                     {
                         return new WorldCommandResponseHandler(logDispatcher);

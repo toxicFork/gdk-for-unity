@@ -34,6 +34,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
         private readonly ILogDispatcher logger;
         private readonly InjectableStore store;
         private readonly RequiredFieldInjector injector;
+        private Entity workerEntity;
 
         public MonoBehaviourActivationManager(GameObject gameObject, RequiredFieldInjector injector,
             InjectableStore store, ILogDispatcher logger)
@@ -45,6 +46,8 @@ namespace Improbable.Gdk.GameObjectRepresentation
             var spatialComponent = gameObject.GetComponent<SpatialOSComponent>();
             var workerType = spatialComponent.Worker.WorkerType;
             entity = spatialComponent.Entity;
+
+            this.workerEntity = spatialComponent.Worker.WorkerEntity;
 
             foreach (var behaviour in gameObject.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -113,7 +116,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
         {
             foreach (var behaviour in behavioursToEnable)
             {
-                var injectedInjectables = injector.InjectAllRequiredFields(behaviour, entity);
+                var injectedInjectables = injector.InjectAllRequiredFields(behaviour, entity, workerEntity);
                 store.AddInjectablesForBehaviour(behaviour, injectedInjectables);
             }
 

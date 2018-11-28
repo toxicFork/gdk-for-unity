@@ -55,7 +55,6 @@ namespace Improbable.Gdk.Core.EditmodeTests.Systems
             receiveSystem = world.GetOrCreateManager<SpatialOSReceiveSystem>();
 
             // Do not add command components from any generated code.
-            receiveSystem.AddAllCommandComponents.Clear();
             receiveSystem.AddDispatcherHandler(firstComponentDispatcher);
             receiveSystem.AddDispatcherHandler(secondComponentDispatcher);
 
