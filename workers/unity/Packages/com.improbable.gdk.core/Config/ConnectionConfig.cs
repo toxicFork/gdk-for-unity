@@ -1,4 +1,5 @@
 using Improbable.Worker.CInterop;
+using Improbable.Worker.CInterop.Alpha;
 
 
 namespace Improbable.Gdk.Core
@@ -11,7 +12,7 @@ namespace Improbable.Gdk.Core
         /// <remarks>
         ///    Default is RakNet.
         /// </remarks>
-        public NetworkConnectionType LinkProtocol = NetworkConnectionType.RakNet;
+        public NetworkConnectionType LinkProtocol = NetworkConnectionType.Kcp;
 
         /// <summary>
         ///     Denotes whether protocol logging should be enabled.
@@ -66,6 +67,16 @@ namespace Improbable.Gdk.Core
                 {
                     ConnectionType = LinkProtocol,
                     UseExternalIp = UseExternalIp,
+                    Kcp = new KcpNetworkParameters
+                    {
+                        EarlyRetransmission = true,
+                        EnableErasureCodec = true,
+                        FastRetransmission = true,
+                        UpdateIntervalMillis = 10,
+                        // might need to vary WindowSize depending on how many updates per tick we send
+                        // Might need to lower MinRtoMillis to 20ms if there are problems
+                        // rest should be fine
+                    }
                 },
                 EnableProtocolLoggingAtStartup = EnableProtocolLoggingAtStartup,
                 DefaultComponentVtable = new PassthroughComponentVtable()

@@ -103,7 +103,6 @@ namespace Improbable.Gdk.Core
                 Worker = await ConnectWithRetries(connectionDelegate, MaxConnectionAttempts, logger, workerType);
 
                 Worker.OnDisconnect += OnDisconnected;
-
                 HandleWorkerConnectionEstablished();
 
                 World.Active = World.Active ?? Worker.World;

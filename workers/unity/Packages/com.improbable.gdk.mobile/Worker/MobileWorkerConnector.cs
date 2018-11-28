@@ -15,18 +15,8 @@ namespace Improbable.Gdk.Mobile
                 WorkerType = workerType,
                 WorkerId = CreateNewWorkerId(workerType),
                 UseExternalIp = true,
-                LinkProtocol = NetworkConnectionType.Tcp,
+                LinkProtocol = NetworkConnectionType.Kcp,
             };
-        }
-
-        protected override LocatorConfig GetLocatorConfig(string workerType)
-        {
-            throw new System.NotImplementedException("The locator flow is currently not available for mobile workers.");
-        }
-
-        protected override bool ShouldUseLocator()
-        {
-            return false;
         }
     }
 }

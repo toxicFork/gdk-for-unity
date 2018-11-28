@@ -38,6 +38,7 @@ namespace Improbable
                 new Package(tempPath, "worker_sdk", "core-dynamic-x86-android-android", $"{nativeDependenciesPath}/Android/x86", new List<string> {"include"}),
                 new Package(tempPath, "worker_sdk", "csharp-c-interop", $"{managedDependenciesPath}/Common"),
                 new Package(tempPath, "worker_sdk", "csharp-c-interop-static", $"{managedDependenciesPath}/iOS"),
+                new Package(tempPath, "csharp", "platform_sdk", $"{managedDependenciesPath}/Common"),
                 new Package(tempPath, "schema", "standard_library", schemaStdLibDir),
                 new Package(tempPath, "tools", "schema_compiler-x86_64-win32", $"{tempPath}/schema_compiler", null, OSPlatform.Windows),
                 new Package(tempPath, "tools", "schema_compiler-x86_64-macos", $"{tempPath}/schema_compiler", null, OSPlatform.OSX),

@@ -4,6 +4,7 @@ using Improbable.Gdk.Mobile;
 using Improbable.Gdk.Mobile.Android;
 #endif
 using System;
+using Improbable.Worker.CInterop;
 using UnityEngine;
 
 
@@ -17,6 +18,12 @@ namespace Playground
         [SerializeField] private GameObject level;
 
         private GameObject levelInstance;
+        
+        // Fields needed to do cloud deployments
+        [SerializeField] private bool useLocator;
+        [SerializeField] private string projectName;
+        [SerializeField] private string deploymentName;
+        [SerializeField] private string loginToken;
 
         public async void TryConnect()
         {
@@ -59,6 +66,35 @@ namespace Playground
             throw new PlatformNotSupportedException(
                 $"{nameof(AndroidClientWorkerConnector)} can only be used for the Android platform. Please check your build settings.");
 #endif
+        }
+        
+        protected override LocatorConfig GetLocatorConfig(string workerType)
+        {
+            return new LocatorConfig
+            {
+                LocatorParameters =
+                {
+                    CredentialsType = LocatorCredentialsType.LoginToken,
+                    ProjectName = projectName,
+                    LoginToken = new LoginTokenCredentials
+                    {
+                        Token = loginToken
+
+                    }
+                },
+                WorkerType = workerType,
+                WorkerId = CreateNewWorkerId(workerType)
+            };
+        }
+
+        protected override bool ShouldUseLocator()
+        {
+            return useLocator;
+        }
+        
+        protected override string SelectDeploymentName(DeploymentList deployments)
+        {
+            return deploymentName;
         }
 
         public override void Dispose()

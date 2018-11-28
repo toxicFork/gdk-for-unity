@@ -4,18 +4,30 @@ using Improbable.Gdk.Mobile;
 using Improbable.Gdk.Mobile.iOS;
 #endif
 using System;
+using Improbable.Worker.CInterop;
+using UnityEditor;
 using UnityEngine;
 
 namespace Playground
 {
-    public class iOSClientWorkerConnector : MobileWorkerConnector, IMobileConnectionController
+    public class iOSClientWorkerConnector : MobileWorkerConnector
     {
         public string IpAddress { get; set; }
-        public ConnectionScreenController ConnectionScreenController { get; set; }
 
         [SerializeField] private GameObject level;
 
         private GameObject levelInstance;
+        
+        // Fields needed to do cloud deployments
+        [SerializeField] private bool useLocator;
+        [SerializeField] private string projectName;
+        [SerializeField] private string deploymentName;
+        [SerializeField] private string loginToken;
+
+        private void Awake()
+        {
+            TryConnect();
+        }
 
         public async void TryConnect()
         {
@@ -24,7 +36,6 @@ namespace Playground
 
         protected override void HandleWorkerConnectionEstablished()
         {
-            ConnectionScreenController.OnConnectionSucceeded();
             WorkerUtils.AddClientSystems(Worker.World);
 
             if (level == null)
@@ -33,11 +44,6 @@ namespace Playground
             }
 
             levelInstance = Instantiate(level, transform.position, transform.rotation);
-        }
-
-        protected override void HandleWorkerConnectionFailure(string errorMessage)
-        {
-            ConnectionScreenController.OnConnectionFailed(errorMessage);
         }
 
         protected override string GetHostIp()
@@ -53,6 +59,35 @@ namespace Playground
             throw new PlatformNotSupportedException(
                 $"{nameof(iOSClientWorkerConnector)} can only be used for the iOS platform. Please check your build settings.");
 #endif
+        }
+                    
+        protected override LocatorConfig GetLocatorConfig(string workerType)
+        {
+            return new LocatorConfig
+            {
+                LocatorParameters =
+                {
+                    CredentialsType = LocatorCredentialsType.LoginToken,
+                    ProjectName = projectName,
+                    LoginToken = new LoginTokenCredentials
+                    {
+                        Token = loginToken
+
+                    }
+                },
+                WorkerType = workerType,
+                WorkerId = CreateNewWorkerId(workerType)
+            };
+        }
+
+        protected override bool ShouldUseLocator()
+        {
+            return useLocator;
+        }
+        
+        protected override string SelectDeploymentName(DeploymentList deployments)
+        {
+            return deploymentName;
         }
 
         public override void Dispose()
