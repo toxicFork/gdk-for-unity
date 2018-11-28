@@ -26,8 +26,6 @@ namespace Improbable.Gdk.Core
         private readonly Dictionary<uint, ComponentDispatcherHandler> componentSpecificDispatchers =
             new Dictionary<uint, ComponentDispatcherHandler>();
 
-        public List<Action<Unity.Entities.Entity>> AddAllCommandComponents = new List<Action<Unity.Entities.Entity>>();
-
         private bool inCriticalSection;
 
         private const string LoggerName = nameof(SpatialOSReceiveSystem);
@@ -99,11 +97,6 @@ namespace Improbable.Gdk.Core
                 EntityId = entityId
             });
             EntityManager.AddComponent(entity, ComponentType.Create<NewlyAddedSpatialOSEntity>());
-
-            foreach (var AddCommandCompoent in AddAllCommandComponents)
-            {
-                AddCommandCompoent(entity);
-            }
 
             WorldCommands.AddWorldCommandRequesters(World, EntityManager, entity);
             worker.EntityIdToEntity.Add(entityId, entity);
@@ -379,7 +372,6 @@ namespace Improbable.Gdk.Core
         internal void AddDispatcherHandler(ComponentDispatcherHandler componentDispatcher)
         {
             componentSpecificDispatchers.Add(componentDispatcher.ComponentId, componentDispatcher);
-            AddAllCommandComponents.Add(componentDispatcher.AddCommandComponents);
             componentDispatcher.AddCommandComponents(worker.WorkerEntity);
         }
 

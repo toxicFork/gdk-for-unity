@@ -32,24 +32,26 @@ namespace <#= qualifiedNamespace #>
             {
                 private readonly EntityManager entityManager;
                 private readonly Entity entity;
+                private readonly Entity workerEntity;
                 public <#= rawRequestType #> Request { get; }
 
-                internal RequestResponder(EntityManager entityManager, Entity entity, <#= rawRequestType #> request)
+                internal RequestResponder(EntityManager entityManager, Entity entity, Entity workerEntity, <#= rawRequestType #> request)
                 {
                     this.entity = entity;
+                    this.workerEntity = workerEntity;
                     this.entityManager = entityManager;
                     Request = request;
                 }
 
                 public void SendResponse(<#= responsePayloadType #> payload)
                 {
-                    entityManager.GetComponentData<CommandResponders.<#= commandDetails.CommandName #>>(entity).ResponsesToSend
+                    entityManager.GetComponentData<CommandResponders.<#= commandDetails.CommandName #>>(workerEntity).ResponsesToSend
                         .Add(<#= commandDetails.CommandName #>.CreateResponse(Request, payload));
                 }
 
                 public void SendResponseFailure(string message)
                 {
-                    entityManager.GetComponentData<CommandResponders.<#= commandDetails.CommandName #>>(entity).ResponsesToSend
+                    entityManager.GetComponentData<CommandResponders.<#= commandDetails.CommandName #>>(workerEntity).ResponsesToSend
                         .Add(<#= commandDetails.CommandName #>.CreateResponseFailure(Request, message));
                 }
             }
@@ -61,9 +63,9 @@ namespace <#= qualifiedNamespace #>
             [InjectableId(InjectableType.CommandRequestSender, <#= unityComponentDefinition.Id #>)]
             internal class CommandRequestSenderCreator : IInjectableCreator
             {
-                public IInjectable CreateInjectable(Entity entity, EntityManager entityManager, ILogDispatcher logDispatcher)
+                public IInjectable CreateInjectable(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logDispatcher)
                 {
-                    return new CommandRequestSender(entity, entityManager, logDispatcher);
+                    return new CommandRequestSender(entity, workerEntity, entityManager, logDispatcher);
                 }
             }
 
@@ -74,12 +76,14 @@ namespace <#= qualifiedNamespace #>
                 public EntityId EntityId { get; private set; }
 
                 private Entity entity;
+                private Entity workerEntity;
                 private readonly EntityManager entityManager;
                 private readonly ILogDispatcher logger;
 
-                public CommandRequestSender(Entity entity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
+                public CommandRequestSender(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
                 {
                     this.entity = entity;
+                    this.workerEntity = workerEntity;
                     this.entityManager = entityManager;
                     this.logger = logger;
                     EntityId = entityManager.GetComponentData<SpatialEntityId>(entity).EntityId;
@@ -125,7 +129,7 @@ namespace <#= qualifiedNamespace #>
                         return -1;
                     }
 
-                    var ecsCommandRequestSender = entityManager.GetComponentData<CommandSenders.<#= commandDetails.CommandName #>>(entity);
+                    var ecsCommandRequestSender = entityManager.GetComponentData<CommandSenders.<#= commandDetails.CommandName #>>(workerEntity);
                     var request = <#= commandDetails.CommandName #>.CreateRequest(entityId, payload, timeoutMillis, allowShortCircuiting, context);
                     ecsCommandRequestSender.RequestsToSend.Add(request);
                     return request.RequestId;
@@ -147,7 +151,7 @@ namespace <#= qualifiedNamespace #>
                         }
                     };
 
-                    var ecsCommandRequestSender = entityManager.GetComponentData<CommandSenders.<#= commandDetails.CommandName #>>(entity);
+                    var ecsCommandRequestSender = entityManager.GetComponentData<CommandSenders.<#= commandDetails.CommandName #>>(workerEntity);
                     var request = <#= commandDetails.CommandName #>.CreateRequest(entityId, payload, timeoutMillis, allowShortCircuiting, callback);
                     ecsCommandRequestSender.RequestsToSend.Add(request);
                     return request.RequestId;
@@ -193,9 +197,9 @@ namespace <#= qualifiedNamespace #>
             [InjectableId(InjectableType.CommandRequestHandler, <#= unityComponentDefinition.Id #>)]
             internal class CommandRequestHandlerCreator : IInjectableCreator
             {
-                public IInjectable CreateInjectable(Entity entity, EntityManager entityManager, ILogDispatcher logDispatcher)
+                public IInjectable CreateInjectable(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logDispatcher)
                 {
-                    return new CommandRequestHandler(entity, entityManager, logDispatcher);
+                    return new CommandRequestHandler(entity, workerEntity, entityManager, logDispatcher);
                 }
             }
 
@@ -204,12 +208,14 @@ namespace <#= qualifiedNamespace #>
             public class CommandRequestHandler : RequirableBase
             {
                 private Entity entity;
+                private Entity workerEntity;
                 private readonly EntityManager entityManager;
                 private readonly ILogDispatcher logger;
 
-                public CommandRequestHandler(Entity entity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
+                public CommandRequestHandler(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
                 {
                     this.entity = entity;
+                    this.workerEntity = workerEntity;
                     this.entityManager = entityManager;
                     this.logger = logger;
                 }
@@ -245,7 +251,7 @@ namespace <#= qualifiedNamespace #>
 
                 internal void On<#= commandDetails.CommandName #>RequestInternal(<#= rawRequestType #> request)
                 {
-                    GameObjectDelegates.DispatchWithErrorHandling(new <#= wrappedRequestType #>(entityManager, entity, request), <#= delegateList #>, logger);
+                    GameObjectDelegates.DispatchWithErrorHandling(new <#= wrappedRequestType #>(entityManager, entity, workerEntity, request), <#= delegateList #>, logger);
                 }
 <# } #>
             }
@@ -253,9 +259,9 @@ namespace <#= qualifiedNamespace #>
             [InjectableId(InjectableType.CommandResponseHandler, <#= unityComponentDefinition.Id #>)]
             internal class CommandResponseHandlerCreator : IInjectableCreator
             {
-                public IInjectable CreateInjectable(Entity entity, EntityManager entityManager, ILogDispatcher logDispatcher)
+                public IInjectable CreateInjectable(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logDispatcher)
                 {
-                    return new CommandResponseHandler(entity, entityManager, logDispatcher);
+                    return new CommandResponseHandler(entity, workerEntity, entityManager, logDispatcher);
                 }
             }
 
@@ -264,12 +270,14 @@ namespace <#= qualifiedNamespace #>
             public class CommandResponseHandler : RequirableBase
             {
                 private Entity entity;
+                private Entity workerEntity;
                 private readonly EntityManager entityManager;
                 private readonly ILogDispatcher logger;
 
-                public CommandResponseHandler(Entity entity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
+                public CommandResponseHandler(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logger) : base(logger)
                 {
                     this.entity = entity;
+                    this.workerEntity = workerEntity;
                     this.entityManager = entityManager;
                     this.logger = logger;
                 }

@@ -8,6 +8,6 @@ namespace Improbable.Gdk.GameObjectRepresentation
     /// </summary>
     public interface IInjectableCreator
     {
-        IInjectable CreateInjectable(Entity entity, EntityManager entityManager, ILogDispatcher logDispatcher);
+        IInjectable CreateInjectable(Entity entity, Entity workerEntity, EntityManager entityManager, ILogDispatcher logDispatcher);
     }
 }

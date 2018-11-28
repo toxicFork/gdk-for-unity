@@ -79,7 +79,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
             for (var i = 0; i < addedEntitiesData.Length; i++)
             {
                 var entity = addedEntitiesData.Entities[i];
-                CreateActivationManagerAndReaderWriterStore(entity);
+                CreateActivationManagerAndReaderWriterStore(entity, worker.WorkerEntity);
                 PostUpdateCommands.AddComponent(entity, new HasActivationManagerSystemState());
             }
 
@@ -242,7 +242,7 @@ namespace Improbable.Gdk.GameObjectRepresentation
             Profiler.EndSample();
         }
 
-        private void CreateActivationManagerAndReaderWriterStore(Entity entity)
+        private void CreateActivationManagerAndReaderWriterStore(Entity entity, Entity workerEntity)
         {
             if (entityToActivationManager.ContainsKey(entity))
             {
