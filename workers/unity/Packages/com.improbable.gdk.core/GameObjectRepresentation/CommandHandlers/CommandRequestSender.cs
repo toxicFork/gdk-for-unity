@@ -1,13 +1,13 @@
 using System;
+using Improbable.Gdk.Core;
 using Improbable.Gdk.Core.Commands;
-using Improbable.Worker;
 
 namespace Improbable.Gdk.GameObjectRepresentation
 {
     public interface ICommandRequestSender
     {
         EntityId EntityId { get; }
-        
+
         long SendCommand<TCommand, TRequest, TResponse>(
             CommandTypeInformation<TCommand, TRequest, TResponse> typeInformation, EntityId entityId, TRequest request,
             Action<TResponse> callback, uint? timeoutMillis, bool allowShortCircuiting)

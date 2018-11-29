@@ -213,7 +213,7 @@ var fieldDetails = fieldDetailsList[i]; #>
 <# } #>
             }
             
-            public static void SerializeSnapshot(<#= componentNamespace #>.Snapshot snapshot, global::Improbable.Worker.Core.SchemaObject obj)
+            public static void SerializeSnapshot(<#= componentNamespace #>.Snapshot snapshot, global::Improbable.Worker.CInterop.SchemaObject obj)
             {
 <# for (var i = 0; i < fieldDetailsList.Count; i++) {
 var fieldDetails = fieldDetailsList[i]; #>

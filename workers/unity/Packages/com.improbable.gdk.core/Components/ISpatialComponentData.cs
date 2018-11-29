@@ -12,8 +12,4 @@ namespace Improbable.Gdk.Core
         /// </summary>
         uint ComponentId { get; }
     }
-
-    public interface ISnapshottable<T> where T : ISpatialComponentSnapshot {
-        T TakeSnapshot(World world);
-    }
 }

@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Improbable.Worker;
-using Improbable.Worker.Core;
-using UnityEngine;
+﻿using Improbable.Worker.CInterop;
 
 namespace Improbable.Gdk.Core.Commands
 {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Improbable.Worker.CInterop;
 using Improbable.Gdk.Core;
 using Improbable.Worker;
-using Improbable.Worker.Core;
+using Improbable.Worker.CInterop;
 using Improbable.Gdk.Core.Commands;
 
 namespace Improbable.Gdk.Tests.NonblittableTypes

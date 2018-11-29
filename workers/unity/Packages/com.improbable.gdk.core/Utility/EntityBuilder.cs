@@ -67,18 +67,20 @@ namespace Improbable.Gdk.Core
             return this;
         }
 
-        public ComponentData? GetComponentData(uint componentId) 
+        public ComponentData? GetComponentData(uint componentId)
         {
             return entity.Get(componentId);
         }
 
-        public void ReplaceComponent(ComponentData componentData) {
-            if (!componentsAdded.Contains(componentData.ComponentId)) {
+        public void ReplaceComponent(ComponentData componentData)
+        {
+            if (!componentsAdded.Contains(componentData.ComponentId))
+            {
                 throw new InvalidOperationException($"Cannot set a component data if it has not been added before.");
             }
 
             var oldData = entity.Get(componentData.ComponentId);
-            oldData.Value.SchemaData.Value.Dispose();
+            oldData.Value.SchemaData.Value.Destroy();
             entity.Add(componentData);
         }
 
@@ -185,7 +187,8 @@ namespace Improbable.Gdk.Core
             return acl.GetComponentWriteAccess(componentId);
         }
 
-        public EntityBuilder SetWriteAccess(uint componentId, string attribute) {
+        public EntityBuilder SetWriteAccess(uint componentId, string attribute)
+        {
             acl.SetComponentWriteAccess(componentId, attribute);
 
             return this;
