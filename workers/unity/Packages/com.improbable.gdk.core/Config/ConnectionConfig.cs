@@ -12,7 +12,7 @@ namespace Improbable.Gdk.Core
         /// <remarks>
         ///    Default is RakNet.
         /// </remarks>
-        public NetworkConnectionType LinkProtocol = NetworkConnectionType.Kcp;
+        public NetworkConnectionType LinkProtocol = NetworkConnectionType.RakNet;
 
         /// <summary>
         ///     Denotes whether protocol logging should be enabled.
