@@ -10,10 +10,9 @@ using UnityEngine;
 
 namespace Playground
 {
-    public class AndroidClientWorkerConnector : MobileWorkerConnector, IMobileConnectionController
+    public class AndroidClientWorkerConnector : MobileWorkerConnector
     {
         public string IpAddress { get; set; }
-        public ConnectionScreenController ConnectionScreenController { get; set; }
 
         [SerializeField] private GameObject level;
 
@@ -25,6 +24,11 @@ namespace Playground
         [SerializeField] private string deploymentName;
         [SerializeField] private string loginToken;
 
+        private void Start()
+        {
+            TryConnect();
+        }
+
         public async void TryConnect()
         {
             await Connect(WorkerUtils.AndroidClient, new ForwardingDispatcher()).ConfigureAwait(false);
@@ -32,7 +36,6 @@ namespace Playground
 
         protected override void HandleWorkerConnectionEstablished()
         {
-            ConnectionScreenController.OnConnectionSucceeded();
             WorkerUtils.AddClientSystems(Worker.World);
 
             if (level == null)
@@ -41,11 +44,6 @@ namespace Playground
             }
 
             levelInstance = Instantiate(level, transform.position, transform.rotation);
-        }
-
-        protected override void HandleWorkerConnectionFailure(string errorMessage)
-        {
-            ConnectionScreenController.OnConnectionFailed(errorMessage);
         }
 
         protected override string GetHostIp()
@@ -95,6 +93,12 @@ namespace Playground
         protected override string SelectDeploymentName(DeploymentList deployments)
         {
             return deploymentName;
+        }
+
+        protected override void OnDisconnected(string reason)
+        {
+            //Instantiate(this);
+            base.OnDisconnected(reason);
         }
 
         public override void Dispose()

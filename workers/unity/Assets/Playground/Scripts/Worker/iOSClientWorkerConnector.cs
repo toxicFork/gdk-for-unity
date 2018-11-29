@@ -24,7 +24,7 @@ namespace Playground
         [SerializeField] private string deploymentName;
         [SerializeField] private string loginToken;
 
-        private void Awake()
+        private void Start()
         {
             TryConnect();
         }
