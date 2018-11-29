@@ -70,9 +70,11 @@ namespace Improbable.Gdk.Core
                     Kcp = new KcpNetworkParameters
                     {
                         EarlyRetransmission = true,
-                        EnableErasureCodec = true,
+                        NonConcessionalFlowControl = true,
                         FastRetransmission = true,
                         UpdateIntervalMillis = 10,
+                        WindowSize = 1000,
+                        MinRtoMillis = 10,
                         // might need to vary WindowSize depending on how many updates per tick we send
                         // Might need to lower MinRtoMillis to 20ms if there are problems
                         // rest should be fine
