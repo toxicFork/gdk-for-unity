@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using UnityEditor;
 
 namespace UnityEngine
@@ -52,7 +55,7 @@ namespace UnityEngine
             {
                 if (GUILayout.Button("Stop"))
                 {
-                    serverListenThread.Kill();
+                    serverListenThread.Kill(true);
                     serverListenThread = null;
                 }
             }

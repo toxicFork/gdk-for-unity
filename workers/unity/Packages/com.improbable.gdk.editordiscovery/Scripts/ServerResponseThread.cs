@@ -8,10 +8,10 @@ using UnityEngine;
 [Serializable]
 public class EditorDiscoveryResponse
 {
-    public string serverName;
-    public string companyName;
-    public string productName;
-    public string dataPath;
+    public string ServerName;
+    public string CompanyName;
+    public string ProductName;
+    public string DataPath;
 }
 
 public class ServerResponseThread
@@ -27,19 +27,31 @@ public class ServerResponseThread
 
     private void Start()
     {
-        using (var sendClient = new UdpClient())
+        try
         {
-            byte[] responseData = Encoding.ASCII.GetBytes(JsonUtility.ToJson(serverInfo));
+            using (var sendClient = new UdpClient())
+            {
+                var json = JsonUtility.ToJson(serverInfo);
 
-            sendClient.Send(responseData, responseData.Length, remoteEp);
+                byte[] responseData = Encoding.ASCII.GetBytes(json);
+
+                Debug.Log("Sending response message: " + json);
+                sendClient.Send(responseData, responseData.Length, remoteEp);
+                Debug.Log("Sent response message: " + json);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
         }
     }
 
-    public static void StartThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
+    internal static Thread StartThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
     {
-        new Thread(() =>
-        {
-            new ServerResponseThread(serverInfo, remoteEp).Start();
-        }).Start();
+        var thread = new Thread(() => { new ServerResponseThread(serverInfo, remoteEp).Start(); });
+
+        thread.Start();
+
+        return thread;
     }
 }
