@@ -81,7 +81,8 @@ namespace Playground
                     }
                 },
                 WorkerType = workerType,
-                WorkerId = CreateNewWorkerId(workerType)
+                WorkerId = CreateNewWorkerId(workerType),
+                LinkProtocol = NetworkConnectionType.Kcp,
             };
         }
 
