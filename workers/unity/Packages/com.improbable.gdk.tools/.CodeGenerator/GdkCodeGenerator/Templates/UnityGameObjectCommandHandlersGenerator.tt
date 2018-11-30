@@ -175,7 +175,7 @@ namespace <#= qualifiedNamespace #>
                         }
 
                         // Can not directly cast to a struct and can not use unsafe code as the request type can not be constrained using unmanaged
-                        switch (request)
+                        switch ((object) request)
                         {
                             case <#= commandDetails.FqnRequestType #> concreteRequest:
                             {
