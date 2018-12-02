@@ -7,15 +7,6 @@ using UnityEngine;
 
 namespace Improbable.GDK.EditorDiscovery
 {
-    [Serializable]
-    public class EditorDiscoveryResponse
-    {
-        public string ServerName;
-        public string CompanyName;
-        public string ProductName;
-        public string DataPath;
-    }
-
     internal class ServerResponseThread
     {
         private readonly IPEndPoint remoteEp;
@@ -48,13 +39,11 @@ namespace Improbable.GDK.EditorDiscovery
             }
         }
 
-        internal static Thread StartThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
+        internal static void StartThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
         {
             var thread = new Thread(() => { new ServerResponseThread(serverInfo, remoteEp).Start(); });
 
             thread.Start();
-
-            return thread;
         }
     }
 }
