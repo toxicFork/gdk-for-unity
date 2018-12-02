@@ -83,6 +83,7 @@ public class ServerListenThreadHandle
     }
 }
 
+
 public class ServerListenThread
 {
     private readonly int packetReceiveTimeoutMs;
@@ -132,73 +133,88 @@ public class ServerListenThread
 
             try
             {
-                // main loop
                 while (true)
                 {
-                    activeResponseThreads.RemoveAll(thread =>
+                    if (!Tick(client))
                     {
-                        if (!thread.IsAlive)
-                        {
-                            Debug.Log("Ending response thread...");
-                            return true;
-                        }
-
-                        return false;
-                    });
-
-                    switch (TryReceive(client, packetReceiveTimeoutMs, killTrigger, out var remoteEp,
-                        out var receivedBytes,
-                        () =>
-                        {
-                            activeResponseThreads.RemoveAll(thread =>
-                            {
-                                if (thread.IsAlive)
-                                {
-                                    return false;
-                                }
-
-                                Debug.Log("Ending response thread...");
-                                return true;
-                            });
-                        }))
-                    {
-                        case ReceiveResult.Success:
-                            Debug.Log(
-                                $">>>>> Rec: {Encoding.ASCII.GetString(receivedBytes)} from {remoteEp.Address} {remoteEp.Port}");
-
-                            while (!serverNameQueue.IsEmpty)
-                            {
-                                if (serverNameQueue.TryDequeue(out var newServerName))
-                                {
-                                    serverName = newServerName;
-                                }
-                            }
-
-                            var serverInfo = new EditorDiscoveryResponse
-                            {
-                                ServerName = serverName,
-                                CompanyName = companyName,
-                                ProductName = productName,
-                                DataPath = dataPath,
-                            };
-
-                            activeResponseThreads.Add(ServerResponseThread.StartThread(serverInfo, remoteEp));
-
-                            break;
-                        case ReceiveResult.Killed:
-                            Debug.Log("Killed?");
-                            return;
-                        case ReceiveResult.Failure:
-                            Debug.Log("Failed?");
-                            return;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        return;
                     }
                 }
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
+            }
+        }
+    }
+
+    private bool Tick(UdpClient client)
+    {
+        var receiveHandle = new ReceiveHandle(client, packetReceiveTimeoutMs, killTrigger);
+
+        // Wait for a packet or a kill
+        while (true)
+        {
+            switch (receiveHandle.Poll(out var remoteEp, out var receivedBytes))
+            {
+                case ReceiveHandle.ReceiveResult.Success:
+                {
+                    Debug.Log(
+                        $">>>>> Rec: {Encoding.ASCII.GetString(receivedBytes)} from {remoteEp.Address} {remoteEp.Port}");
+
+                    UpdateServerName();
+
+                    var serverInfo = new EditorDiscoveryResponse
+                    {
+                        ServerName = serverName,
+                        CompanyName = companyName,
+                        ProductName = productName,
+                        DataPath = dataPath,
+                    };
+
+                    activeResponseThreads.Add(ServerResponseThread.StartThread(serverInfo, remoteEp));
+                    return true;
+                }
+                case ReceiveHandle.ReceiveResult.Cancelled:
+                    // TODO handle kill
+
+                    client.Close();
+                    receiveHandle.ForceEnd();
+
+                    Debug.Log("Killed?");
+                    return false;
+                case ReceiveHandle.ReceiveResult.TimedOut:
+                    CleanupResponseThreads();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+
+    private void CleanupResponseThreads()
+    {
+        activeResponseThreads.RemoveAll(thread =>
+        {
+            if (thread.IsAlive)
+            {
+                return false;
+            }
+
+            Debug.Log("Ending response thread...");
+            return true;
+        });
+    }
+
+    private void UpdateServerName()
+    {
+        // TODO use a mutex instead?
+        // TODO google "thread-safe string C#"
+        while (!serverNameQueue.IsEmpty)
+        {
+            if (serverNameQueue.TryDequeue(out var newServerName))
+            {
+                serverName = newServerName;
             }
         }
     }
@@ -211,55 +227,5 @@ public class ServerListenThread
         handle.Start();
 
         return handle;
-    }
-
-    private enum ReceiveResult
-    {
-        Success,
-        Killed,
-        Failure,
-    }
-
-    private static ReceiveResult TryReceive(
-        UdpClient client,
-        int packetReceiveTimeoutMs,
-        WaitHandle killTrigger,
-        out IPEndPoint remoteEndPoint,
-        out byte[] receivedBytes,
-        Action onPacketReceiveTimeout = null)
-    {
-        var beginReceive = client.BeginReceive(null, null);
-        var handle = beginReceive.AsyncWaitHandle;
-
-        remoteEndPoint = null;
-        receivedBytes = null;
-
-        while (true)
-        {
-            if (handle.WaitOne(packetReceiveTimeoutMs))
-            {
-                if (!beginReceive.IsCompleted)
-                {
-                    return ReceiveResult.Failure;
-                }
-
-                var remoteEp = new IPEndPoint(IPAddress.Any, 0);
-                var result = client.EndReceive(beginReceive, ref remoteEp);
-
-                remoteEndPoint = remoteEp;
-                receivedBytes = result;
-
-                return ReceiveResult.Success;
-            }
-
-            if (killTrigger.WaitOne(0))
-            {
-                return ReceiveResult.Killed;
-            }
-            else
-            {
-                onPacketReceiveTimeout?.Invoke();
-            }
-        }
     }
 }
