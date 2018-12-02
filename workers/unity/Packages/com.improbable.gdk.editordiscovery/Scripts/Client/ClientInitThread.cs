@@ -1,3 +1,6 @@
-public class ClientInitThread
+namespace Improbable.GDK.EditorDiscovery
 {
+    internal class ClientInitThread
+    {
+    }
 }

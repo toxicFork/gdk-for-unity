@@ -1,11 +1,13 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using UnityEditor;
+using UnityEngine;
 
-namespace UnityEngine
+namespace Improbable.GDK.EditorDiscovery
 {
-    public class ServerConfigurationWindow : EditorWindow
+    internal class ServerConfigurationWindow : EditorWindow
     {
         private ServerListenThreadHandle serverListenThread;
         private string serverName;
@@ -61,19 +63,24 @@ namespace UnityEngine
 
                 if (GUILayout.Button("Test"))
                 {
-                    using (var client = new UdpClient())
+                    new Thread(() =>
                     {
-                        var bytes = Encoding.ASCII.GetBytes("test string");
+                        using (var client = new UdpClient())
+                        {
+                            var bytes = Encoding.ASCII.GetBytes("test string");
 
-                        var testEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
+                            var testEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8080);
 
-                        client.Send(bytes, bytes.Length, testEndPoint);
+                            client.Send(bytes, bytes.Length, testEndPoint);
 
-                        var remoteEp = new IPEndPoint(IPAddress.Any, 0);
-                        var receivedBytes = client.Receive(ref remoteEp);
+                            Thread.Sleep(5000);
 
-                        Debug.Log("Received response: " + Encoding.ASCII.GetString(receivedBytes));
-                    }
+                            var remoteEp = new IPEndPoint(IPAddress.Any, 0);
+                            var receivedBytes = client.Receive(ref remoteEp);
+
+                            Debug.Log("Received response: " + Encoding.ASCII.GetString(receivedBytes));
+                        }
+                    }).Start();
                 }
             }
         }
