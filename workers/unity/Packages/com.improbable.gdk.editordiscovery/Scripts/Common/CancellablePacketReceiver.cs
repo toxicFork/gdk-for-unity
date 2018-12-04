@@ -13,7 +13,7 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly UdpClient client;
         private readonly ManualResetEvent killTrigger;
 
-        public enum ReceiveResult
+        public enum PollResult
         {
             Success,
             Cancelled,
@@ -30,7 +30,7 @@ namespace Improbable.GDK.EditorDiscovery
             handle = beginReceive.AsyncWaitHandle;
         }
 
-        public ReceiveResult Poll(out IPEndPoint remoteEndPoint, out byte[] receivedBytes)
+        public PollResult Poll(out IPEndPoint remoteEndPoint, out byte[] receivedBytes)
         {
             remoteEndPoint = null;
             receivedBytes = null;
@@ -43,15 +43,15 @@ namespace Improbable.GDK.EditorDiscovery
 
                 remoteEndPoint = remoteEp;
 
-                return ReceiveResult.Success;
+                return PollResult.Success;
             }
 
             if (killTrigger.WaitOne(0))
             {
-                return ReceiveResult.Cancelled;
+                return PollResult.Cancelled;
             }
 
-            return ReceiveResult.TimedOut;
+            return PollResult.TimedOut;
         }
 
         public void ForceEnd()

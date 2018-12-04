@@ -46,12 +46,19 @@ namespace Improbable.GDK.EditorDiscovery
         {
             using (var client = new UdpClient())
             {
+                // client.Client.SendTimeout = 200;
+                // client.Client.ReceiveTimeout = 200;
+
                 var socket = client.Client;
 
                 // Allows multiple server listen threads to listen on the same port
                 // e.g. multiple Unity editor instances in the same computer.
                 socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                socket.Bind(new IPEndPoint(IPAddress.Any, editorDiscoveryPort));
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+                var ipEndPoint = new IPEndPoint(IPAddress.Any, editorDiscoveryPort);
+                socket.Bind(ipEndPoint);
+
+                Debug.Log($"Server listening at {ipEndPoint}");
 
                 try
                 {
@@ -94,7 +101,7 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 var receiveResult = receiveHandle.Poll(out var remoteEp, out var receivedBytes);
 
-                if (receiveResult == CancellablePacketReceiver.ReceiveResult.Success)
+                if (receiveResult == CancellablePacketReceiver.PollResult.Success)
                 {
                     Debug.Log(
                         $">>>>> Rec: {Encoding.ASCII.GetString(receivedBytes)} from {remoteEp.Address} {remoteEp.Port}");
@@ -113,7 +120,7 @@ namespace Improbable.GDK.EditorDiscovery
                     return TickResult.ReceivedPacket;
                 }
 
-                if (receiveResult == CancellablePacketReceiver.ReceiveResult.Cancelled)
+                if (receiveResult == CancellablePacketReceiver.PollResult.Cancelled)
                 {
                     // TODO handle kill
 
@@ -124,7 +131,7 @@ namespace Improbable.GDK.EditorDiscovery
                     return TickResult.Killed;
                 }
 
-                if (receiveResult == CancellablePacketReceiver.ReceiveResult.TimedOut)
+                if (receiveResult == CancellablePacketReceiver.PollResult.TimedOut)
                 {
                     continue;
                 }

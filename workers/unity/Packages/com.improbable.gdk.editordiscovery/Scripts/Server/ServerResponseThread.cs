@@ -24,13 +24,15 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 using (var sendClient = new UdpClient())
                 {
+                    // sendClient.Client.SendTimeout = 200;
+                    // sendClient.Client.ReceiveTimeout = 200;
+
                     var json = JsonUtility.ToJson(serverInfo);
 
                     var responseData = Encoding.ASCII.GetBytes(json);
 
                     Debug.Log("Sending response message: " + json);
                     sendClient.Send(responseData, responseData.Length, remoteEp);
-                    Debug.Log("Sent response message: " + json);
                 }
             }
             catch (Exception e)
