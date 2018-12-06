@@ -7,14 +7,12 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly ClientListenThread clientListenThread;
 
         public ClientListenThreadHandle(
-            IPEndPoint listenEndPoint,
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs
         )
         {
             clientListenThread =
                 new ClientListenThread(
-                    listenEndPoint,
                     packetReceiveTimeoutMs,
                     staleServerResponseTimeMs,
                     KillTrigger);
@@ -28,6 +26,11 @@ namespace Improbable.GDK.EditorDiscovery
         public void WaitForReady()
         {
             clientListenThread.ReadyTrigger.WaitOne();
+        }
+
+        public int GetPort()
+        {
+            return clientListenThread.port;
         }
     }
 }

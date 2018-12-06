@@ -31,7 +31,7 @@ namespace Improbable.GDK.EditorDiscovery
 
                     var responseData = Encoding.ASCII.GetBytes(json);
 
-                    Debug.Log("Sending response message: " + json);
+                    Debug.Log("Sending response message: " + json + "to " + remoteEp);
                     sendClient.Send(responseData, responseData.Length, remoteEp);
                 }
             }

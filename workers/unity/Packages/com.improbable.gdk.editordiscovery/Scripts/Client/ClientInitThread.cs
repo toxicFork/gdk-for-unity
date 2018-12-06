@@ -135,7 +135,6 @@ namespace Improbable.GDK.EditorDiscovery
 
             var listenThreadHandle = new ClientNetworkInterfaceThreadHandle(
                 sendAddress,
-                IPAddress.Any /* TODO is it any? */,
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,

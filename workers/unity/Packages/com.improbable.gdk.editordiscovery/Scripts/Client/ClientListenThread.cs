@@ -25,21 +25,20 @@ namespace Improbable.GDK.EditorDiscovery
         }
 
         private readonly ManualResetEvent killTrigger;
-        private readonly IPEndPoint listenEndPoint;
         public readonly ManualResetEvent ReadyTrigger;
         private readonly int packetReceiveTimeoutMs;
         private readonly int staleServerResponseTimeMs;
 
         private readonly List<ServerInfo> serverInfoList = new List<ServerInfo>();
 
+        public int port;
+
         public ClientListenThread(
-            IPEndPoint listenEndPoint,
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs,
             ManualResetEvent killTrigger
         )
         {
-            this.listenEndPoint = listenEndPoint;
             this.killTrigger = killTrigger;
             this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
             this.staleServerResponseTimeMs = staleServerResponseTimeMs;
@@ -58,8 +57,9 @@ namespace Improbable.GDK.EditorDiscovery
                     SocketOptionName.ReuseAddress, true);
                 receiveClient.Client.SetSocketOption(SocketOptionLevel.Socket,
                     SocketOptionName.Broadcast, true);
-                Debug.Log($"Listening on {listenEndPoint.Address} port {listenEndPoint.Port}");
-                receiveClient.Client.Bind(new IPEndPoint(listenEndPoint.Address, listenEndPoint.Port));
+                receiveClient.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
+
+                port = ((IPEndPoint) receiveClient.Client.LocalEndPoint).Port;
 
                 // TODO start listen
                 ReadyTrigger.Set();
@@ -123,6 +123,7 @@ namespace Improbable.GDK.EditorDiscovery
                             // TODO quit
                             return;
                         }
+
                         Debug.LogError($"Invalid receiveResult?");
 
                         // Invalid receiveResult

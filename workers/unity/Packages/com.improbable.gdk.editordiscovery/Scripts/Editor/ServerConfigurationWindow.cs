@@ -17,7 +17,6 @@ namespace Improbable.GDK.EditorDiscovery
         private string serverName;
 
         private string clientSendAddressString = "127.255.255.255";
-        private string clientListenAddressString = "127.0.0.1";
 
         private int editorDiscoveryPort = 8888;
 
@@ -30,42 +29,6 @@ namespace Improbable.GDK.EditorDiscovery
         public void OnEnable()
         {
             serverName = EditorPrefs.GetString("discovery-server-name", "default");
-
-            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
-            {
-                Debug.Log($"Network interface {networkInterface.Name}");
-
-                foreach (var addressInformation in networkInterface.GetIPProperties().UnicastAddresses
-                    .Where(info => info.Address.AddressFamily == AddressFamily.InterNetwork)
-                )
-                {
-                    Debug.Log($"    Address: {addressInformation.Address.AddressFamily} {addressInformation.Address}");
-                }
-
-                foreach (var addressInformation in networkInterface.GetIPProperties().AnycastAddresses
-                    .Where(info => info.Address.AddressFamily == AddressFamily.InterNetwork)
-                )
-                {
-                    Debug.Log(
-                        $"    Anycast Address: {addressInformation.Address.AddressFamily} {addressInformation.Address}");
-                }
-
-                foreach (var addressInformation in networkInterface.GetIPProperties().MulticastAddresses
-                    .Where(info => info.Address.AddressFamily == AddressFamily.InterNetwork)
-                )
-                {
-                    Debug.Log(
-                        $"    Multicast Address: {addressInformation.Address.AddressFamily} {addressInformation.Address}");
-                }
-
-                foreach (var addressInformation in networkInterface.GetIPProperties().GatewayAddresses
-                    .Where(info => info.Address.AddressFamily == AddressFamily.InterNetwork)
-                )
-                {
-                    Debug.Log(
-                        $"    Gateway Address: {addressInformation.Address.AddressFamily} {addressInformation.Address}");
-                }
-            }
         }
 
         // ReSharper disable once InvertIf
@@ -134,7 +97,6 @@ namespace Improbable.GDK.EditorDiscovery
                     GUIUtility.hotControl = 0;
                     GUIUtility.keyboardControl = 0;
                     clientSendAddressString = "127.255.255.255";
-                    clientListenAddressString = "127.0.0.1";
                 }
 
                 if (GUILayout.Button("Global Broadcast"))
@@ -169,18 +131,15 @@ namespace Improbable.GDK.EditorDiscovery
             // }
 
             clientSendAddressString = EditorGUILayout.TextField("Test address", clientSendAddressString);
-            clientListenAddressString = EditorGUILayout.TextField("Client listen address", clientListenAddressString);
 
             if (clientNetworkInterfaceThreadHandle == null)
             {
                 if (GUILayout.Button("Client Start"))
                 {
                     var sendAddress = IPAddress.Parse(clientSendAddressString);
-                    var clientListenAddress = IPAddress.Parse(clientListenAddressString);
 
                     clientNetworkInterfaceThreadHandle = new ClientNetworkInterfaceThreadHandle(
                         sendAddress,
-                        clientListenAddress,
                         editorDiscoveryPort,
                         1000,
                         20,

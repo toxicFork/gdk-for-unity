@@ -103,8 +103,20 @@ namespace Improbable.GDK.EditorDiscovery
 
                 if (receiveResult == CancellablePacketReceiver.PollResult.Success)
                 {
+                    var receivedString = Encoding.ASCII.GetString(receivedBytes);
                     Debug.Log(
-                        $">>>>> Rec: {Encoding.ASCII.GetString(receivedBytes)} from {remoteEp.Address} {remoteEp.Port}");
+                        $">>>>> Rec: {receivedString} from {remoteEp.Address} {remoteEp.Port}");
+
+                    int responsePort;
+
+                    try
+                    {
+                        responsePort = JsonUtility.FromJson<ClientRequest>(receivedString).listenPort;
+                    }
+                    catch (Exception)
+                    {
+                        responsePort = remoteEp.Port;
+                    }
 
                     UpdateServerName();
 
@@ -116,7 +128,7 @@ namespace Improbable.GDK.EditorDiscovery
                         DataPath = dataPath,
                     };
 
-                    ServerResponseThread.StartThread(serverInfo, remoteEp);
+                    ServerResponseThread.StartThread(serverInfo, new IPEndPoint(remoteEp.Address, responsePort));
                     return TickResult.ReceivedPacket;
                 }
 

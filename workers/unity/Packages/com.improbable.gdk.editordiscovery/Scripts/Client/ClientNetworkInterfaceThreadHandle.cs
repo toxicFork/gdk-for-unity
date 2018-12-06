@@ -8,7 +8,6 @@ namespace Improbable.GDK.EditorDiscovery
 
         public ClientNetworkInterfaceThreadHandle(
             IPAddress sendAddress,
-            IPAddress clientListenAddress,
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
@@ -18,7 +17,6 @@ namespace Improbable.GDK.EditorDiscovery
         {
             clientInterfaceThread = new ClientNetworkInterfaceThread(
                 sendAddress,
-                clientListenAddress,
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
