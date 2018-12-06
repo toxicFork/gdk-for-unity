@@ -5,7 +5,8 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class FakeLocalhostNetworkInterface : INetworkInterface
     {
-        public string Name => "Fake Localhost Interface";
+        public string Name => "Localhost Interface Wrapper";
+        public string Id => "Localhost Interface Wrapper";
 
         public OperationalStatus OperationalStatus => OperationalStatus.Up;
 

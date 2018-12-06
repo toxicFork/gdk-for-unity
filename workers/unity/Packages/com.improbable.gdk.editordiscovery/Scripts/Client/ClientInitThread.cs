@@ -10,9 +10,9 @@ namespace Improbable.GDK.EditorDiscovery
     {
         private INetworkInterface[] availableNetInterfaces;
 
-        private readonly Dictionary<INetworkInterface, ClientNetworkInterfaceThreadHandle> clientInterfaceThreadHandles
+        private readonly Dictionary<string, ClientNetworkInterfaceThreadHandle> clientInterfaceThreadHandles
             =
-            new Dictionary<INetworkInterface, ClientNetworkInterfaceThreadHandle>();
+            new Dictionary<string, ClientNetworkInterfaceThreadHandle>();
 
         private readonly ManualResetEvent killTrigger;
         private readonly int timeBetweenBroadcastsMs;
@@ -58,7 +58,15 @@ namespace Improbable.GDK.EditorDiscovery
                 Debug.Log("interfaces: " + string.Join(", ",
                     availableNetInterfaces.Select(networkInterface => networkInterface.Name)));
 
-                if (killTrigger.WaitOne(networkInterfaceCheckInterval))
+                try
+                {
+                    if (killTrigger.WaitOne(networkInterfaceCheckInterval))
+                    {
+                        KillAllThreads();
+                        return;
+                    }
+                }
+                catch (ThreadAbortException)
                 {
                     KillAllThreads();
                     return;
@@ -75,18 +83,13 @@ namespace Improbable.GDK.EditorDiscovery
             availableNetInterfaces = networkInterfaceWrappers
                 .Where(networkInterface =>
                 {
-                    Debug.Log($"Discovered: {networkInterface.Name}");
-
-                    if (availableNetInterfaces.Any(otherInterface => otherInterface.Name == networkInterface.Name))
+                    if (availableNetInterfaces.Any(otherInterface => otherInterface.Id == networkInterface.Id))
                     {
-                        Debug.Log($"{networkInterface.Name} already in the list");
-
                         return true;
                     }
 
                     if (!IsNetworkInterfaceSuitable(networkInterface))
                     {
-                        Debug.Log($"{networkInterface.Name} not suitable!");
                         return false;
                     }
 
@@ -126,13 +129,13 @@ namespace Improbable.GDK.EditorDiscovery
                         return true;
                     }
 
-                    Debug.Log($"killing: {networkInterface.Name}");
+                    Debug.Log($"killing: {networkInterface.Name} | {networkInterface.Id}");
 
-                    var threadHandle = clientInterfaceThreadHandles[networkInterface];
+                    var threadHandle = clientInterfaceThreadHandles[networkInterface.Id];
 
                     threadHandle.Kill(true);
 
-                    clientInterfaceThreadHandles.Remove(networkInterface);
+                    clientInterfaceThreadHandles.Remove(networkInterface.Id);
 
                     return false;
                 }).ToArray();
@@ -150,10 +153,16 @@ namespace Improbable.GDK.EditorDiscovery
 
         private void SpawnThreadForInterface(INetworkInterface networkInterface)
         {
-            Debug.Log($"Spawning thread for interface: {networkInterface.Name}");
+            if (clientInterfaceThreadHandles.ContainsKey(networkInterface.Id))
+            {
+                Debug.Log($"There is already a network interface with id {networkInterface.Id} for the handles");
+                return;
+            }
+
+            Debug.Log($"Spawning thread for interface: {networkInterface.Name} | {networkInterface.Id}");
+
             var listenThreadHandle = new ClientNetworkInterfaceThreadHandle(
-                networkInterface.GetBindingAddress(),
-                networkInterface.GetSendAddress(),
+                networkInterface,
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
@@ -162,7 +171,14 @@ namespace Improbable.GDK.EditorDiscovery
 
             listenThreadHandle.Start();
 
-            clientInterfaceThreadHandles[networkInterface] = listenThreadHandle;
+            clientInterfaceThreadHandles[networkInterface.Id] = listenThreadHandle;
+        }
+
+        public NetworkInterfaceInfo[] GetNetworkInterfaceInfos()
+        {
+            return clientInterfaceThreadHandles.Values
+                .Select(clientInterfaceThreadHandle => clientInterfaceThreadHandle.GetNetworkInterfaceInfo())
+                .ToArray();
         }
     }
 }

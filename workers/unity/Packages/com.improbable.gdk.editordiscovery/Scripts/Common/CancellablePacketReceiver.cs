@@ -35,23 +35,30 @@ namespace Improbable.GDK.EditorDiscovery
             remoteEndPoint = null;
             receivedBytes = null;
 
-            if (handle.WaitOne(packetReceiveTimeoutMs))
+            try
             {
-                var remoteEp = new IPEndPoint(IPAddress.Any, 0);
+                if (handle.WaitOne(packetReceiveTimeoutMs))
+                {
+                    var remoteEp = new IPEndPoint(IPAddress.Any, 0);
 
-                receivedBytes = client.EndReceive(beginReceive, ref remoteEp);
+                    receivedBytes = client.EndReceive(beginReceive, ref remoteEp);
 
-                remoteEndPoint = remoteEp;
+                    remoteEndPoint = remoteEp;
 
-                return PollResult.Success;
+                    return PollResult.Success;
+                }
+
+                if (killTrigger.WaitOne(0))
+                {
+                    return PollResult.Cancelled;
+                }
+
+                return PollResult.TimedOut;
             }
-
-            if (killTrigger.WaitOne(0))
+            catch (ThreadAbortException)
             {
                 return PollResult.Cancelled;
             }
-
-            return PollResult.TimedOut;
         }
 
         public void ForceEnd()

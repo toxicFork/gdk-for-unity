@@ -13,9 +13,8 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly int packetReceiveTimeoutMs;
         private readonly int editorDiscoveryPort;
         private readonly ManualResetEvent killTrigger;
-        private readonly ConcurrentQueue<string> serverNameQueue;
 
-        private string serverName;
+        public string serverName;
 
         private readonly string dataPath;
         private readonly string companyName;
@@ -26,7 +25,6 @@ namespace Improbable.GDK.EditorDiscovery
             int editorDiscoveryPort,
             int packetReceiveTimeoutMs,
             ManualResetEvent killTrigger,
-            ConcurrentQueue<string> serverNameQueue,
             string dataPath,
             string companyName,
             string productName)
@@ -35,14 +33,13 @@ namespace Improbable.GDK.EditorDiscovery
             this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
             this.editorDiscoveryPort = editorDiscoveryPort;
             this.killTrigger = killTrigger;
-            this.serverNameQueue = serverNameQueue;
 
             this.dataPath = dataPath;
             this.companyName = companyName;
             this.productName = productName;
         }
 
-        internal void Start()
+        internal void ThreadMethod()
         {
             using (var client = new UdpClient())
             {
@@ -118,8 +115,6 @@ namespace Improbable.GDK.EditorDiscovery
                         responsePort = remoteEp.Port;
                     }
 
-                    UpdateServerName();
-
                     var serverInfo = new EditorDiscoveryResponse
                     {
                         ServerName = serverName,
@@ -150,19 +145,6 @@ namespace Improbable.GDK.EditorDiscovery
 
                 // Unknown receive result
                 throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private void UpdateServerName()
-        {
-            // TODO use a mutex instead?
-            // TODO google "thread-safe string C#"
-            while (!serverNameQueue.IsEmpty)
-            {
-                if (serverNameQueue.TryDequeue(out var newServerName))
-                {
-                    serverName = newServerName;
-                }
             }
         }
 

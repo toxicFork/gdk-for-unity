@@ -20,7 +20,7 @@ namespace Improbable.GDK.EditorDiscovery
 
         protected override void ThreadMethod()
         {
-            clientListenThread.Start();
+            clientListenThread.ThreadMethod();
         }
 
         public void WaitForReady()
@@ -31,6 +31,11 @@ namespace Improbable.GDK.EditorDiscovery
         public int GetPort()
         {
             return clientListenThread.port;
+        }
+
+        public ServerInfo[] GetServerInfos()
+        {
+            return clientListenThread.GetServerInfos();
         }
     }
 }

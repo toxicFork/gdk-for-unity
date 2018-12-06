@@ -7,8 +7,7 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly ClientNetworkInterfaceThread clientInterfaceThread;
 
         public ClientNetworkInterfaceThreadHandle(
-            IPAddress bindingAddress,
-            IPAddress sendAddress,
+            INetworkInterface networkInterface,
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
@@ -17,8 +16,7 @@ namespace Improbable.GDK.EditorDiscovery
         )
         {
             clientInterfaceThread = new ClientNetworkInterfaceThread(
-                bindingAddress,
-                sendAddress,
+                networkInterface,
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
@@ -29,7 +27,17 @@ namespace Improbable.GDK.EditorDiscovery
 
         protected override void ThreadMethod()
         {
-            clientInterfaceThread.Start();
+            clientInterfaceThread.ThreadMethod();
+        }
+
+        private ServerInfo[] GetServerInfos()
+        {
+            return clientInterfaceThread.GetServerInfos();
+        }
+
+        public NetworkInterfaceInfo GetNetworkInterfaceInfo()
+        {
+            return clientInterfaceThread.GetNetworkInterfaceInfo();
         }
     }
 }

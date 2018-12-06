@@ -9,7 +9,7 @@ namespace Improbable.GDK.EditorDiscovery
     internal class ClientNetworkInterfaceThread
     {
         private readonly IPAddress bindAddress;
-        private readonly IPAddress broadcastAddress;
+        private readonly IPAddress sendAddress;
         private readonly int editorDiscoveryPort;
         private readonly int timeBetweenBroadcastsMs;
         private readonly int packetReceiveTimeoutMs;
@@ -20,10 +20,12 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly ManualResetEvent killTrigger;
 
         private int listenPort;
+        private readonly ClientListenThreadHandle clientListenThreadHandle;
+
+        private readonly INetworkInterface networkInterface;
 
         public ClientNetworkInterfaceThread(
-            IPAddress bindAddress,
-            IPAddress broadcastAddress,
+            INetworkInterface networkInterface,
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
@@ -31,22 +33,24 @@ namespace Improbable.GDK.EditorDiscovery
             bool allowRouting,
             ManualResetEvent killTrigger)
         {
-            this.bindAddress = bindAddress;
-            this.broadcastAddress = broadcastAddress;
+            this.networkInterface = networkInterface;
+            bindAddress = networkInterface.GetBindingAddress();
+            sendAddress = networkInterface.GetSendAddress();
+
             this.editorDiscoveryPort = editorDiscoveryPort;
             this.timeBetweenBroadcastsMs = timeBetweenBroadcastsMs;
             this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
             this.staleServerResponseTimeMs = staleServerResponseTimeMs;
             this.allowRouting = allowRouting;
             this.killTrigger = killTrigger;
-        }
 
-        public void Start()
-        {
-            var clientListenThreadHandle = new ClientListenThreadHandle(
+            clientListenThreadHandle = new ClientListenThreadHandle(
                 packetReceiveTimeoutMs,
                 staleServerResponseTimeMs);
+        }
 
+        public void ThreadMethod()
+        {
             clientListenThreadHandle.Start();
             clientListenThreadHandle.WaitForReady();
             listenPort = clientListenThreadHandle.GetPort();
@@ -64,14 +68,22 @@ namespace Improbable.GDK.EditorDiscovery
 
                 udpClient.Client.Bind(new IPEndPoint(bindAddress, 0));
 
-                Debug.Log($"Client broadcasting via address: {bindAddress} to {broadcastAddress}");
+                Debug.Log($"Client broadcasting via address: {bindAddress} to {sendAddress}");
 
 
                 while (true)
                 {
                     SendMessage(udpClient);
 
-                    if (killTrigger.WaitOne(timeBetweenBroadcastsMs))
+                    try
+                    {
+                        if (killTrigger.WaitOne(timeBetweenBroadcastsMs))
+                        {
+                            clientListenThreadHandle.Kill(true);
+                            return;
+                        }
+                    }
+                    catch (ThreadAbortException)
                     {
                         clientListenThreadHandle.Kill(true);
                         return;
@@ -84,7 +96,17 @@ namespace Improbable.GDK.EditorDiscovery
         {
             var requestData = Encoding.ASCII.GetBytes(JsonUtility.ToJson(new ClientRequest(listenPort)));
 
-            client.Send(requestData, requestData.Length, new IPEndPoint(broadcastAddress, editorDiscoveryPort));
+            client.Send(requestData, requestData.Length, new IPEndPoint(sendAddress, editorDiscoveryPort));
+        }
+
+        public ServerInfo[] GetServerInfos()
+        {
+            return clientListenThreadHandle.GetServerInfos();
+        }
+
+        public NetworkInterfaceInfo GetNetworkInterfaceInfo()
+        {
+            return new NetworkInterfaceInfo(networkInterface.Name, GetServerInfos());
         }
     }
 }

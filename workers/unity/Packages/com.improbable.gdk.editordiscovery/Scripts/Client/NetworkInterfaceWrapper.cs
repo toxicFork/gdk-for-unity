@@ -15,6 +15,7 @@ namespace Improbable.GDK.EditorDiscovery
         }
 
         public string Name => networkInterface.Name;
+        public string Id => networkInterface.Id;
 
         public OperationalStatus OperationalStatus => networkInterface.OperationalStatus;
 

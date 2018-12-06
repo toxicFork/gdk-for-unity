@@ -18,7 +18,7 @@ namespace Improbable.GDK.EditorDiscovery
             this.remoteEp = remoteEp;
         }
 
-        private void Start()
+        private void ThreadMethod()
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Improbable.GDK.EditorDiscovery
 
         internal static void StartThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
         {
-            var thread = new Thread(() => { new ServerResponseThread(serverInfo, remoteEp).Start(); });
+            var thread = new Thread(() => { new ServerResponseThread(serverInfo, remoteEp).ThreadMethod(); });
 
             thread.Start();
         }

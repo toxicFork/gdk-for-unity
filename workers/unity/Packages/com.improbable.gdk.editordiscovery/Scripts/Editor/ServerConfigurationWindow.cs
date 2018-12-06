@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -45,6 +46,18 @@ namespace Improbable.GDK.EditorDiscovery
                 clientNetworkInterfaceThreadHandle.Kill(true);
                 clientNetworkInterfaceThreadHandle = null;
             }
+
+            if (clientInitThreadHandle != null)
+            {
+                clientInitThreadHandle.Kill(true);
+                clientInitThreadHandle = null;
+            }
+        }
+
+        public void Update()
+        {
+            // This is necessary to make the framerate normal for the editor window.
+            Repaint();
         }
 
         public void OnGUI()
@@ -120,7 +133,7 @@ namespace Improbable.GDK.EditorDiscovery
             //     }
             //
             //     foreach (var unicastAddress in networkInterface.GetIPProperties().UnicastAddresses
-            //         .Where(addr => addr.Address.AddressFamily == AddressFamily.InterNetwork))
+            //         .Where(addr => addr.Address.AddressFamily == AddressFamily.InaterNetwork))
             //     {
             //         if (GUILayout.Button($"{networkInterface.Name} via {unicastAddress.Address}"))
             //         {
@@ -139,8 +152,7 @@ namespace Improbable.GDK.EditorDiscovery
                     var sendAddress = IPAddress.Parse(clientSendAddressString);
 
                     clientNetworkInterfaceThreadHandle = new ClientNetworkInterfaceThreadHandle(
-                        IPAddress.Any,
-                        sendAddress,
+                        new FakeNetworkInterface("custom", IPAddress.Any, sendAddress),
                         editorDiscoveryPort,
                         1000,
                         20,
@@ -164,9 +176,9 @@ namespace Improbable.GDK.EditorDiscovery
                 {
                     clientInitThreadHandle = new ClientInitThreadHandle(
                         editorDiscoveryPort,
-                        5000,
+                        1000,
                         20,
-                        2000,
+                        5000,
                         5000,
                         new[]
                         {
@@ -182,6 +194,31 @@ namespace Improbable.GDK.EditorDiscovery
                 {
                     clientInitThreadHandle.Kill(true);
                     clientInitThreadHandle = null;
+                }
+                else
+                {
+                    foreach (var networkInterfaceInfo in clientInitThreadHandle.GetNetworkInterfaceInfos())
+                    {
+                        EditorGUILayout.LabelField(networkInterfaceInfo.NetworkInterfaceName);
+                        using (new EditorGUI.IndentLevelScope(1))
+                        {
+                            foreach (var serverInfo in networkInterfaceInfo.ServerInfos)
+                            {
+                                EditorGUILayout.LabelField($"ServerName: {serverInfo.serverResponse.ServerName}");
+                                using (new EditorGUI.IndentLevelScope(1))
+                                {
+                                    EditorGUILayout.LabelField($"DataPath: {serverInfo.serverResponse.DataPath}");
+                                    EditorGUILayout.LabelField($"CompanyName: {serverInfo.serverResponse.CompanyName}");
+                                    EditorGUILayout.LabelField($"ProductName: {serverInfo.serverResponse.ProductName}");
+                                    EditorGUILayout.LabelField($"IPAddress: {serverInfo.IPAddress}");
+                                    var timeSpan = (DateTime.Now - serverInfo.ResponseTime);
+                                    EditorGUILayout.LabelField(
+                                        $"Time: {timeSpan.TotalSeconds + timeSpan.TotalMilliseconds * 0.001f:0.##}");
+                                    EditorGUILayout.Space();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

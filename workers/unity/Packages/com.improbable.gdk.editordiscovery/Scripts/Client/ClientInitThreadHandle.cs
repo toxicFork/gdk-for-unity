@@ -32,5 +32,10 @@ namespace Improbable.GDK.EditorDiscovery
         {
             clientInitThread.Start();
         }
+
+        public NetworkInterfaceInfo[] GetNetworkInterfaceInfos()
+        {
+            return clientInitThread.GetNetworkInterfaceInfos();
+        }
     }
 }

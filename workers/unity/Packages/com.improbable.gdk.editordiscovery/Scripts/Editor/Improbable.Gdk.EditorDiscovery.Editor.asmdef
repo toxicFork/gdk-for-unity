@@ -1,0 +1,12 @@
+{
+    "name": "Improbable.Gdk.EditorDiscovery.Editor",
+    "references": [
+        "Improbable.Gdk.EditorDiscovery"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

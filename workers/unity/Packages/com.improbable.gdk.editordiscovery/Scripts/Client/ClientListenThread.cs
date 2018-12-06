@@ -10,20 +10,6 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ClientListenThread
     {
-        private class ServerInfo
-        {
-            public readonly EditorDiscoveryResponse serverResponse;
-            public readonly DateTime ResponseTime;
-            public readonly IPAddress IPAddress;
-
-            public ServerInfo(IPAddress ipAddress, EditorDiscoveryResponse editorDiscoveryResponse)
-            {
-                serverResponse = editorDiscoveryResponse;
-                ResponseTime = DateTime.Now;
-                IPAddress = ipAddress;
-            }
-        }
-
         private readonly ManualResetEvent killTrigger;
         public readonly ManualResetEvent ReadyTrigger;
         private readonly int packetReceiveTimeoutMs;
@@ -46,7 +32,21 @@ namespace Improbable.GDK.EditorDiscovery
             ReadyTrigger = new ManualResetEvent(false);
         }
 
-        public void Start()
+        public ServerInfo[] GetServerInfos()
+        {
+            var serverInfos = serverInfoList.ToArray();
+            Array.Sort(serverInfos, (a, b) =>
+            {
+                var serverNameSort = string.Compare(a.serverResponse.ServerName, b.serverResponse.ServerName,
+                    StringComparison.Ordinal);
+                return serverNameSort == 0
+                    ? string.Compare(a.serverResponse.DataPath, b.serverResponse.DataPath, StringComparison.Ordinal)
+                    : serverNameSort;
+            });
+            return serverInfos;
+        }
+
+        public void ThreadMethod()
         {
             using (var receiveClient = new UdpClient())
             {
@@ -68,8 +68,6 @@ namespace Improbable.GDK.EditorDiscovery
                 {
                     Debug.Log($"Receiving!");
 
-                    // var receiveResult = receiveClient.BeginReceive(null, null);
-                    // var receiveHandle = receiveResult.AsyncWaitHandle;
                     var packetReceiver = new CancellablePacketReceiver(receiveClient,
                         packetReceiveTimeoutMs,
                         killTrigger);

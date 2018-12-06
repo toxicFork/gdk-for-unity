@@ -6,6 +6,7 @@ namespace Improbable.GDK.EditorDiscovery
     internal interface INetworkInterface
     {
         string Name { get; }
+        string Id { get; }
 
         OperationalStatus OperationalStatus { get; }
 
