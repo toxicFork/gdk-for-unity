@@ -1,7 +1,4 @@
-using System;
-using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -11,29 +8,36 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ClientNetworkInterfaceThread
     {
-        private readonly IPAddress sendAddress;
+        private readonly IPAddress bindAddress;
+        private readonly IPAddress broadcastAddress;
         private readonly int editorDiscoveryPort;
         private readonly int timeBetweenBroadcastsMs;
         private readonly int packetReceiveTimeoutMs;
+
         private readonly int staleServerResponseTimeMs;
-        private readonly bool isBroadcast;
+
+        private readonly bool allowRouting;
         private readonly ManualResetEvent killTrigger;
 
+        private int listenPort;
+
         public ClientNetworkInterfaceThread(
-            IPAddress sendAddress,
+            IPAddress bindAddress,
+            IPAddress broadcastAddress,
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs,
-            bool isBroadcast,
+            bool allowRouting,
             ManualResetEvent killTrigger)
         {
-            this.sendAddress = sendAddress;
+            this.bindAddress = bindAddress;
+            this.broadcastAddress = broadcastAddress;
             this.editorDiscoveryPort = editorDiscoveryPort;
             this.timeBetweenBroadcastsMs = timeBetweenBroadcastsMs;
             this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
             this.staleServerResponseTimeMs = staleServerResponseTimeMs;
-            this.isBroadcast = isBroadcast;
+            this.allowRouting = allowRouting;
             this.killTrigger = killTrigger;
         }
 
@@ -45,7 +49,7 @@ namespace Improbable.GDK.EditorDiscovery
 
             clientListenThreadHandle.Start();
             clientListenThreadHandle.WaitForReady();
-            var listenPort = clientListenThreadHandle.GetPort();
+            listenPort = clientListenThreadHandle.GetPort();
 
             using (var udpClient = new UdpClient())
             {
@@ -53,31 +57,19 @@ namespace Improbable.GDK.EditorDiscovery
                 // udpClient.Client.ReceiveTimeout = 200;
                 udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, 1);
 
-                if (isBroadcast)
+                if (allowRouting)
                 {
                     udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontRoute, 1);
-                    udpClient.Client.Bind(new IPEndPoint(sendAddress, 0));
-                }
-                else
-                {
-                    udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    udpClient.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
                 }
 
-                Debug.Log($"Client sending to address: {sendAddress}");
+                udpClient.Client.Bind(new IPEndPoint(bindAddress, 0));
+
+                Debug.Log($"Client broadcasting via address: {bindAddress} to {broadcastAddress}");
+
 
                 while (true)
                 {
-                    if (isBroadcast)
-                    {
-                        BroadcastMessage(udpClient);
-                    }
-                    else
-                    {
-                        var requestData = Encoding.ASCII.GetBytes(JsonUtility.ToJson(new ClientRequest(listenPort)));
-
-                        udpClient.Send(requestData, requestData.Length, new IPEndPoint(sendAddress, 8888));
-                    }
+                    SendMessage(udpClient);
 
                     if (killTrigger.WaitOne(timeBetweenBroadcastsMs))
                     {
@@ -88,11 +80,11 @@ namespace Improbable.GDK.EditorDiscovery
             }
         }
 
-        private void BroadcastMessage(UdpClient client)
+        private void SendMessage(UdpClient client)
         {
-            var requestData = Encoding.ASCII.GetBytes("SomeRequestData");
+            var requestData = Encoding.ASCII.GetBytes(JsonUtility.ToJson(new ClientRequest(listenPort)));
 
-            client.Send(requestData, requestData.Length, new IPEndPoint(IPAddress.Broadcast, editorDiscoveryPort));
+            client.Send(requestData, requestData.Length, new IPEndPoint(broadcastAddress, editorDiscoveryPort));
         }
     }
 }

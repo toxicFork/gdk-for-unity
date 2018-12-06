@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 using UnityEngine;
@@ -9,22 +8,27 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ClientInitThread
     {
-        private NetworkInterface[] availableNetInterfaces;
+        private INetworkInterface[] availableNetInterfaces;
 
-        private readonly Dictionary<NetworkInterface, ClientNetworkInterfaceThreadHandle> clientInterfaceThreadHandles =
-            new Dictionary<NetworkInterface, ClientNetworkInterfaceThreadHandle>();
+        private readonly Dictionary<INetworkInterface, ClientNetworkInterfaceThreadHandle> clientInterfaceThreadHandles
+            =
+            new Dictionary<INetworkInterface, ClientNetworkInterfaceThreadHandle>();
 
         private readonly ManualResetEvent killTrigger;
         private readonly int timeBetweenBroadcastsMs;
         private readonly int packetReceiveTimeoutMs;
         private readonly int staleServerResponseTimeMs;
         private readonly int editorDiscoveryPort;
+        private readonly int networkInterfaceCheckInterval;
+        private readonly INetworkInterface[] additionalNetworkInterfaces;
 
         public ClientInitThread(
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs,
+            int networkInterfaceCheckInterval,
+            INetworkInterface[] additionalNetworkInterfaces,
             ManualResetEvent killTrigger
         )
         {
@@ -32,12 +36,14 @@ namespace Improbable.GDK.EditorDiscovery
             this.timeBetweenBroadcastsMs = timeBetweenBroadcastsMs;
             this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
             this.staleServerResponseTimeMs = staleServerResponseTimeMs;
+            this.networkInterfaceCheckInterval = networkInterfaceCheckInterval;
+            this.additionalNetworkInterfaces = additionalNetworkInterfaces;
             this.killTrigger = killTrigger;
         }
 
         public void Start()
         {
-            availableNetInterfaces = new NetworkInterface[0];
+            availableNetInterfaces = new INetworkInterface[0];
 
             Loop();
         }
@@ -46,38 +52,52 @@ namespace Improbable.GDK.EditorDiscovery
         {
             while (true)
             {
-                if (killTrigger.WaitOne(0))
+                CheckForDeadNetworkInterfaces();
+                CheckForNewNetworkInterfaces();
+
+                Debug.Log("interfaces: " + string.Join(", ",
+                    availableNetInterfaces.Select(networkInterface => networkInterface.Name)));
+
+                if (killTrigger.WaitOne(networkInterfaceCheckInterval))
                 {
                     KillAllThreads();
                     return;
                 }
-
-                CheckForDeadNetworkInterfaces();
-                CheckForNewNetworkInterfaces();
             }
         }
 
         private void CheckForNewNetworkInterfaces()
         {
-            availableNetInterfaces = NetworkInterface.GetAllNetworkInterfaces()
+            var networkInterfaceWrappers = NetworkInterface.GetAllNetworkInterfaces()
+                .Select(networkInterface => (INetworkInterface) new NetworkInterfaceWrapper(networkInterface))
+                .Concat(additionalNetworkInterfaces);
+
+            availableNetInterfaces = networkInterfaceWrappers
                 .Where(networkInterface =>
                 {
-                    if (availableNetInterfaces.Contains(networkInterface))
+                    Debug.Log($"Discovered: {networkInterface.Name}");
+
+                    if (availableNetInterfaces.Any(otherInterface => otherInterface.Name == networkInterface.Name))
                     {
+                        Debug.Log($"{networkInterface.Name} already in the list");
+
                         return true;
                     }
 
                     if (!IsNetworkInterfaceSuitable(networkInterface))
                     {
+                        Debug.Log($"{networkInterface.Name} not suitable!");
                         return false;
                     }
+
+                    Debug.Log($"{networkInterface.Name} suitable!");
 
                     SpawnThreadForInterface(networkInterface);
                     return true;
                 }).ToArray();
         }
 
-        private static bool IsNetworkInterfaceSuitable(NetworkInterface networkInterface)
+        private static bool IsNetworkInterfaceSuitable(INetworkInterface networkInterface)
         {
             if (networkInterface.OperationalStatus == OperationalStatus.LowerLayerDown ||
                 networkInterface.OperationalStatus == OperationalStatus.Down ||
@@ -86,14 +106,11 @@ namespace Improbable.GDK.EditorDiscovery
                 return false;
             }
 
-            if (networkInterface.GetIPProperties().UnicastAddresses.Count == 0)
+            var bindingAddresses = networkInterface.GetBindingAddress();
+
+            if (bindingAddresses == null)
             {
                 return false;
-            }
-
-            if (networkInterface.GetIPProperties().UnicastAddresses.Count > 1)
-            {
-                Debug.LogWarning("multiple unicast addresses?");
             }
 
             return true;
@@ -108,6 +125,8 @@ namespace Improbable.GDK.EditorDiscovery
                     {
                         return true;
                     }
+
+                    Debug.Log($"killing: {networkInterface.Name}");
 
                     var threadHandle = clientInterfaceThreadHandles[networkInterface];
 
@@ -129,12 +148,12 @@ namespace Improbable.GDK.EditorDiscovery
             clientInterfaceThreadHandles.Clear();
         }
 
-        private void SpawnThreadForInterface(NetworkInterface availableNetInterface)
+        private void SpawnThreadForInterface(INetworkInterface networkInterface)
         {
-            var sendAddress = availableNetInterface.GetIPProperties().UnicastAddresses.First().Address;
-
+            Debug.Log($"Spawning thread for interface: {networkInterface.Name}");
             var listenThreadHandle = new ClientNetworkInterfaceThreadHandle(
-                sendAddress,
+                networkInterface.GetBindingAddress(),
+                networkInterface.GetSendAddress(),
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
@@ -143,7 +162,7 @@ namespace Improbable.GDK.EditorDiscovery
 
             listenThreadHandle.Start();
 
-            clientInterfaceThreadHandles[availableNetInterface] = listenThreadHandle;
+            clientInterfaceThreadHandles[networkInterface] = listenThreadHandle;
         }
     }
 }

@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -13,6 +12,7 @@ namespace Improbable.GDK.EditorDiscovery
     {
         private ServerListenThreadHandle serverListenThread;
         private ClientNetworkInterfaceThreadHandle clientNetworkInterfaceThreadHandle;
+        private ClientInitThreadHandle clientInitThreadHandle;
 
         private string serverName;
 
@@ -134,11 +134,12 @@ namespace Improbable.GDK.EditorDiscovery
 
             if (clientNetworkInterfaceThreadHandle == null)
             {
-                if (GUILayout.Button("Client Start"))
+                if (GUILayout.Button("Simple Client Start"))
                 {
                     var sendAddress = IPAddress.Parse(clientSendAddressString);
 
                     clientNetworkInterfaceThreadHandle = new ClientNetworkInterfaceThreadHandle(
+                        IPAddress.Any,
                         sendAddress,
                         editorDiscoveryPort,
                         1000,
@@ -154,6 +155,33 @@ namespace Improbable.GDK.EditorDiscovery
                 {
                     clientNetworkInterfaceThreadHandle.Kill(true);
                     clientNetworkInterfaceThreadHandle = null;
+                }
+            }
+
+            if (clientInitThreadHandle == null)
+            {
+                if (GUILayout.Button("Full Client Start"))
+                {
+                    clientInitThreadHandle = new ClientInitThreadHandle(
+                        editorDiscoveryPort,
+                        5000,
+                        20,
+                        2000,
+                        5000,
+                        new[]
+                        {
+                            new FakeLocalhostNetworkInterface()
+                        }
+                    );
+                    clientInitThreadHandle.Start();
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Full Client Stop"))
+                {
+                    clientInitThreadHandle.Kill(true);
+                    clientInitThreadHandle = null;
                 }
             }
         }

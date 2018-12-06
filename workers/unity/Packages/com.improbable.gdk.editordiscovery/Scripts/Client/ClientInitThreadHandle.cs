@@ -8,14 +8,23 @@ namespace Improbable.GDK.EditorDiscovery
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
-            int staleServerResponseTimeMs
+            int staleServerResponseTimeMs,
+            int networkInterfaceCheckInterval,
+            INetworkInterface[] additionalNetworkInterfaces = null
         )
         {
+            if (additionalNetworkInterfaces == null)
+            {
+                additionalNetworkInterfaces = new INetworkInterface[0];
+            }
+
             clientInitThread = new ClientInitThread(
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
                 staleServerResponseTimeMs,
+                networkInterfaceCheckInterval,
+                additionalNetworkInterfaces,
                 KillTrigger);
         }
 

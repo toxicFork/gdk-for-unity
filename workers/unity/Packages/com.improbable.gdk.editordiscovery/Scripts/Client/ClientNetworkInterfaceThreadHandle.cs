@@ -7,21 +7,23 @@ namespace Improbable.GDK.EditorDiscovery
         private readonly ClientNetworkInterfaceThread clientInterfaceThread;
 
         public ClientNetworkInterfaceThreadHandle(
+            IPAddress bindingAddress,
             IPAddress sendAddress,
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs,
-            bool isBroadcast
+            bool allowRouting
         )
         {
             clientInterfaceThread = new ClientNetworkInterfaceThread(
+                bindingAddress,
                 sendAddress,
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
                 staleServerResponseTimeMs,
-                isBroadcast,
+                allowRouting,
                 KillTrigger);
         }
 
