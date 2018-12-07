@@ -5,29 +5,30 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class FakeNetworkInterface : INetworkInterface
     {
-        private readonly IPAddress bindAddress;
-        private readonly IPAddress sendAddress;
-        private readonly string name;
+        private readonly IPAddress _bindAddress;
+        private readonly IPAddress _sendAddress;
 
         public FakeNetworkInterface(string name, IPAddress bindAddress, IPAddress sendAddress)
         {
-            this.name = name;
-            this.bindAddress = bindAddress;
-            this.sendAddress = sendAddress;
+            Name = name;
+            _bindAddress = bindAddress;
+            _sendAddress = sendAddress;
         }
 
-        public string Name => name;
-        public string Id => $"fake: {name}";
+        public string Name { get; }
+
+        public string Id => $"fake: {Name}";
+
         public OperationalStatus OperationalStatus => OperationalStatus.Up;
 
         public IPAddress GetBindingAddress()
         {
-            return bindAddress;
+            return _bindAddress;
         }
 
         public IPAddress GetSendAddress()
         {
-            return sendAddress;
+            return _sendAddress;
         }
     }
 }

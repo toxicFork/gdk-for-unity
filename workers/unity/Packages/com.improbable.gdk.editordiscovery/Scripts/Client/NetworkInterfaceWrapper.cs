@@ -19,12 +19,19 @@ namespace Improbable.GDK.EditorDiscovery
 
         public OperationalStatus OperationalStatus => networkInterface.OperationalStatus;
 
+        private IPAddress _bindingAddressCache;
+
         public IPAddress GetBindingAddress()
         {
-            return networkInterface
-                .GetIPProperties()
-                .UnicastAddresses
-                .FirstOrDefault(address => address.Address.AddressFamily == AddressFamily.InterNetwork)?.Address;
+            if (_bindingAddressCache == null)
+            {
+                _bindingAddressCache = networkInterface
+                    .GetIPProperties()
+                    .UnicastAddresses
+                    .FirstOrDefault(address => address.Address.AddressFamily == AddressFamily.InterNetwork)?.Address;
+            }
+
+            return _bindingAddressCache;
         }
 
         public IPAddress GetSendAddress()

@@ -9,13 +9,13 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ServerResponseThread
     {
-        private readonly IPEndPoint remoteEp;
-        private readonly EditorDiscoveryResponse serverInfo;
+        private readonly IPEndPoint _remoteEp;
+        private readonly EditorDiscoveryResponse _serverInfo;
 
         private ServerResponseThread(EditorDiscoveryResponse serverInfo, IPEndPoint remoteEp)
         {
-            this.serverInfo = serverInfo;
-            this.remoteEp = remoteEp;
+            _serverInfo = serverInfo;
+            _remoteEp = remoteEp;
         }
 
         private void ThreadMethod()
@@ -24,15 +24,11 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 using (var sendClient = new UdpClient())
                 {
-                    // sendClient.Client.SendTimeout = 200;
-                    // sendClient.Client.ReceiveTimeout = 200;
-
-                    var json = JsonUtility.ToJson(serverInfo);
+                    var json = JsonUtility.ToJson(_serverInfo);
 
                     var responseData = Encoding.ASCII.GetBytes(json);
 
-                    Debug.Log("Sending response message: " + json + "to " + remoteEp);
-                    sendClient.Send(responseData, responseData.Length, remoteEp);
+                    sendClient.Send(responseData, responseData.Length, _remoteEp);
                 }
             }
             catch (Exception e)

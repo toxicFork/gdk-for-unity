@@ -5,13 +5,13 @@ namespace Improbable.GDK.EditorDiscovery
 {
     public class ServerInfo
     {
-        public readonly EditorDiscoveryResponse serverResponse;
+        public readonly EditorDiscoveryResponse ServerResponse;
         public readonly DateTime ResponseTime;
         public readonly IPAddress IPAddress;
 
         public ServerInfo(IPAddress ipAddress, EditorDiscoveryResponse editorDiscoveryResponse)
         {
-            serverResponse = editorDiscoveryResponse;
+            ServerResponse = editorDiscoveryResponse;
             ResponseTime = DateTime.Now;
             IPAddress = ipAddress;
         }
