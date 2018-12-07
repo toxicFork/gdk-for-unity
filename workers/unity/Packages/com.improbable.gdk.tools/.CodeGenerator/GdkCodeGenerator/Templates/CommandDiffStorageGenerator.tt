@@ -1,0 +1,76 @@
+<#@ template language="C#" #>
+<#@ output extension=".cs" #>
+<#
+    var fieldDetailsList = GetFieldDetailsList();
+    var componentDetails = GetComponentDetails();
+    var generatedHeader = CommonGeneratorUtils.GetGeneratedHeader();
+    var commandDetailsList = GetCommandDetailsList();
+    var eventDetailsList = GetEventDetailsList();
+    var componentNamespace = qualifiedNamespace + "." + componentDetails.ComponentName;
+    var profilingStart = $"Profiler.BeginSample(\"{componentDetails.ComponentName}\");";
+    var profilingEnd = "Profiler.EndSample();";
+#>
+<#= generatedHeader #>
+
+using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.Entities;
+using Improbable.Gdk.Core;
+using Improbable.Worker.CInterop;
+
+namespace <#= qualifiedNamespace #>
+{
+    public partial class <#= componentDetails.ComponentName #>
+    {
+<# foreach (var command in commandDetailsList) {
+        var receivedRequestType = command.CommandName + ".ReceivedRequest";
+        var receivedResponseType = command.CommandName + ".RawReceivedResponse";
+#>
+        public class Diff<#= command.CommandName #>CommandStorage : IDiffCommandRequestStorage<<#= receivedRequestType #>>, IDiffCommandResponseStorage<<#= receivedResponseType #>>
+        {
+            CommandDiffStorage<<#= receivedRequestType #>> requestStorage =
+                new CommandDiffStorage<<#= receivedRequestType #>>();
+
+            CommandDiffStorage<<#= receivedResponseType #>> responseStorage =
+                new CommandDiffStorage<<#= receivedResponseType #>>();
+
+            public uint GetComponentId()
+            {
+                return ComponentId;
+            }
+
+            public uint GetCommandId()
+            {
+                return <#= command.CommandIndex #>;
+            }
+
+            public void Clean()
+            {
+                requestStorage.Clean();
+                responseStorage.Clean();
+            }
+
+            public void AddRequest(<#= receivedRequestType #> request)
+            {
+                requestStorage.AddMessage(request);
+            }
+
+            public void GetRequests(ICollection<<#= receivedRequestType #>> messageList)
+            {
+                requestStorage.GetMessages(messageList);
+            }
+
+            public void AddResponse(<#= receivedResponseType #> response)
+            {
+                responseStorage.AddMessage(response);
+            }
+
+            public void GetResponses(ICollection<<#= receivedResponseType #>> messageList)
+            {
+                responseStorage.GetMessages(messageList);
+            }
+        }
+
+<# } #>
+    }
+}

@@ -285,6 +285,19 @@ var fieldDetails = fieldDetailsList[i]; #>
                 return update;
             }
 
+            public static <#= componentNamespace #>.Update DeserializeUpdate(global::Improbable.Worker.CInterop.SchemaComponentData data)
+            {
+                var update = new <#= componentNamespace #>.Update();
+                var obj = data.GetFields();
+
+<# foreach (var fieldDetails in fieldDetailsList) { #>
+                {
+                    <#= fieldDetails.GetDeserializeDataIntoUpdateString("update." + fieldDetails.PascalCaseName, "obj", 5) #>
+                }
+<# } #>
+                return update;
+            }
+
             public static <#= componentNamespace #>.Snapshot DeserializeSnapshot(global::Improbable.Worker.CInterop.SchemaObject obj, global::Unity.Entities.World world)
             {
                 var component = new <#= componentNamespace #>.Snapshot();

@@ -57,6 +57,9 @@ namespace Improbable.Gdk.Core
             }
         }
 
+        private DiffCreatorFromOpList c = new DiffCreatorFromOpList();
+        private ViewDiff diff = new ViewDiff();
+
         protected override void OnUpdate()
         {
             var updateSystem = World.GetExistingManager<ComponentUpdateSystem>();
@@ -69,6 +72,10 @@ namespace Improbable.Gdk.Core
             {
                 using (var opList = worker.Connection.GetOpList(0))
                 {
+                    Profiler.BeginSample("diff");
+                    c.ParseOpListIntoDiff(opList, diff);
+                    diff.Clean();
+                    Profiler.EndSample();
                     for (int i = 0; i < opList.GetOpCount(); ++i)
                     {
                         switch (opList.GetOpType(i))
