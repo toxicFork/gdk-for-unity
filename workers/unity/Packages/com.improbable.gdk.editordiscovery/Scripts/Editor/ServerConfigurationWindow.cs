@@ -152,7 +152,8 @@ namespace Improbable.GDK.EditorDiscovery
                     _clientNetworkInterface.Kill(true);
                     _clientNetworkInterface = null;
                 }
-                else
+
+                if (_clientNetworkInterface != null)
                 {
                     var networkInterfaceInfo = _clientNetworkInterface.GetNetworkInterfaceInfo();
 
@@ -185,7 +186,8 @@ namespace Improbable.GDK.EditorDiscovery
                     _editorDiscoveryClient.Kill(true);
                     _editorDiscoveryClient = null;
                 }
-                else
+
+                if (_editorDiscoveryClient != null)
                 {
                     foreach (var networkInterfaceInfo in _editorDiscoveryClient.GetNetworkInterfaceInfos())
                     {

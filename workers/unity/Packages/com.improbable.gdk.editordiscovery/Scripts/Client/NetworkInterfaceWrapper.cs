@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -23,12 +24,20 @@ namespace Improbable.GDK.EditorDiscovery
 
         public IPAddress GetBindingAddress()
         {
-            if (_bindingAddressCache == null)
+            if (_bindingAddressCache == null && networkInterface.OperationalStatus != OperationalStatus.Down)
             {
-                _bindingAddressCache = networkInterface
-                    .GetIPProperties()
-                    .UnicastAddresses
-                    .FirstOrDefault(address => address.Address.AddressFamily == AddressFamily.InterNetwork)?.Address;
+                try
+                {
+                    _bindingAddressCache = networkInterface
+                        .GetIPProperties()
+                        .UnicastAddresses
+                        .FirstOrDefault(address => address.Address.AddressFamily == AddressFamily.InterNetwork)
+                        ?.Address;
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
 
             return _bindingAddressCache;
