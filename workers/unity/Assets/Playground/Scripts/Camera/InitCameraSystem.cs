@@ -29,6 +29,8 @@ namespace Playground
 
         protected override void OnUpdate()
         {
+            return;
+
             for (var i = 0; i < data.Length; i++)
             {
                 var entity = data.Entites[i];

@@ -79,10 +79,10 @@ namespace Improbable.Gdk.PlayerLifecycle
                         if (heartbeatData.NumFailedHeartbeats >= PlayerLifecycleConfig.MaxNumFailedPlayerHeartbeats)
                         {
                             var entityId = spatialIds[i].EntityId;
-                            deleteRequesters[i].RequestsToSend.Add(WorldCommands.DeleteEntity.CreateRequest
-                            (
-                                entityId
-                            ));
+                            // deleteRequesters[i].RequestsToSend.Add(WorldCommands.DeleteEntity.CreateRequest
+                            // (
+                            //     entityId
+                            // ));
 
                             worker.LogDispatcher.HandleLog(LogType.Log,
                                 new LogEvent(

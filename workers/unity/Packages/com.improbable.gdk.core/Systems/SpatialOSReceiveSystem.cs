@@ -65,6 +65,8 @@ namespace Improbable.Gdk.Core
             AuthorityChangesProvider.CleanDataInWorld(World);
         }
 
+        private Queue<OpList> opListQueue = new Queue<OpList>();
+
         protected override void OnUpdate()
         {
             if (worker.Connection == null)
@@ -72,14 +74,41 @@ namespace Improbable.Gdk.Core
                 return;
             }
 
-            do
+            if (worker.Paused)
             {
-                using (var opList = worker.Connection.GetOpList(0))
-                {
-                    Dispatcher.Process(opList);
-                }
+                opListQueue.Enqueue(worker.Connection.GetOpList(0));
+                Debug.Log(opListQueue.Count);
             }
-            while (inCriticalSection);
+            else
+            {
+                while (opListQueue.Count > 0)
+                {
+                    var opList = opListQueue.Dequeue();
+                    Dispatcher.Process(opList);
+                    opList.Dispose();
+                }
+
+                if (worker.opListQueue.Count > 0)
+                {
+                    Debug.Log($"Worker has {worker.opListQueue.Count} ops to dequeue");
+
+                    while (worker.opListQueue.Count > 0)
+                    {
+                        var opList = worker.opListQueue.Dequeue();
+                        Dispatcher.Process(opList);
+                        opList.Dispose();
+                    }
+                }
+
+                do
+                {
+                    using (var opList = worker.Connection.GetOpList(0))
+                    {
+                        Dispatcher.Process(opList);
+                    }
+                }
+                while (inCriticalSection);
+            }
         }
 
         internal void OnAddEntity(AddEntityOp op)

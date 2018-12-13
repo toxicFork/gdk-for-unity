@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using Improbable.Worker.CInterop;
 using Unity.Entities;
 using UnityEngine;
@@ -12,6 +13,7 @@ namespace Improbable.Gdk.Core
     [DisableAutoCreation]
     public class WorkerSystem : ComponentSystem
     {
+        public bool Paused = false;
         public readonly Connection Connection;
         public readonly ILogDispatcher LogDispatcher;
         public readonly string WorkerType;
@@ -23,6 +25,7 @@ namespace Improbable.Gdk.Core
         public Entity WorkerEntity;
 
         internal readonly Dictionary<EntityId, Entity> EntityIdToEntity = new Dictionary<EntityId, Entity>();
+        private AutoResetEvent resumedEvent;
 
         public WorkerSystem(Connection connection, ILogDispatcher logDispatcher, string workerType, Vector3 origin)
         {
@@ -68,6 +71,37 @@ namespace Improbable.Gdk.Core
 
         protected override void OnUpdate()
         {
+        }
+
+        public Queue<OpList> opListQueue = new Queue<OpList>();
+        private Thread pokeThread;
+
+        public void PokeConnectionFromThread()
+        {
+            resumedEvent = new AutoResetEvent(false);
+
+            pokeThread = new Thread(() =>
+            {
+                while (true)
+                {
+                    Debug.Log($"Num ops enqueued: {opListQueue.Count}");
+                    opListQueue.Enqueue(Connection.GetOpList(0));
+
+                    if (resumedEvent.WaitOne(1000))
+                    {
+                        break;
+                    }
+                }
+            });
+
+            pokeThread.Start();
+        }
+
+        public void StopPoking()
+        {
+            resumedEvent.Set();
+
+            pokeThread.Join();
         }
     }
 }

@@ -1,4 +1,5 @@
 using Improbable.Gdk.Core;
+using Improbable.Gdk.Mobile;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,7 @@ namespace Playground
         [SerializeField] private Button connectButton;
         [SerializeField] private Text errorMessage;
         [SerializeField] private GameObject clientWorkerPrefab;
+        [SerializeField] private GameObject pauseChecker;
 
         private GameObject worker;
 
@@ -38,6 +40,16 @@ namespace Playground
             PlayerPrefs.Save();
 
             connectionPanel.SetActive(false);
+
+            // var workerConnector = worker.GetComponent<IMobileConnectionController>();
+
+            pauseChecker.GetComponent<PauseTester>().worker = worker
+                .GetComponent<MobileWorkerConnector>()
+                .Worker
+                .World
+                .GetExistingManager<WorkerSystem>();
+
+            pauseChecker.SetActive(true);
         }
 
         public void OnConnectionFailed(string connectionError)
