@@ -39,14 +39,16 @@ namespace Playground
 
         private static void MinimapExample()
         {
-            var playerConstraint = Interest.Query()
-                .All(Constraint.RelativeSphere(20), 
-                    Constraint.Component<PlayerInfo.Component>())
+            var playerConstraint = Interest
+                .Query(Constraint.All(
+                    Constraint.RelativeSphere(20), 
+                    Constraint.Component<PlayerInfo.Component>()))
                 .Result<Position.Component, PlayerInfo.Component>();
 
-            var miniMapConstraint = Interest.Query()
-                .All(Constraint.RelativeBox(50, double.PositiveInfinity, 50),
-                    Constraint.Component<MinimapRepresentation.Component>())
+            var miniMapConstraint = Interest
+                .Query(Constraint.All(
+                    Constraint.RelativeBox(50, double.PositiveInfinity, 50),
+                    Constraint.Component<MinimapRepresentation.Component>()))
                 .Result<Position.Component, MinimapRepresentation.Component>();
 
             var interest = new InterestComponent()
@@ -59,8 +61,8 @@ namespace Playground
             var isblue = true;
             //some logic to determine which team
 
-            var teamQuery = Interest.Query()
-                .ComponentConstraint(isblue ? BlueTeam.ComponentId : RedTeam.ComponentId);
+            var teamQuery = Interest
+                .Query(Constraint.Component(isblue ? BlueTeam.ComponentId : RedTeam.ComponentId));
             
             var interest = new InterestComponent()
                 .AddQuery<PlayerControls.Component>(teamQuery);
@@ -68,15 +70,17 @@ namespace Playground
 
         private static void FrequencyExample()
         {
-            var playerConstraint = Interest.Query()
-                .All(Constraint.RelativeSphere(20), 
-                    Constraint.Component<PlayerInfo.Component>())
+            var playerConstraint = Interest
+                .Query(Constraint.All(
+                    Constraint.RelativeSphere(20), 
+                    Constraint.Component<PlayerInfo.Component>()))
                 .Frequency(20)
                 .Result<Position.Component, PlayerInfo.Component>();
 
-            var miniMapConstraint = Interest.Query()
-                .All(Constraint.RelativeBox(50, double.PositiveInfinity, 50),
-                    Constraint.Component<MinimapRepresentation.Component>())
+            var miniMapConstraint = Interest
+                .Query(Constraint.All(
+                    Constraint.RelativeBox(50, double.PositiveInfinity, 50),
+                    Constraint.Component<MinimapRepresentation.Component>()))
                 .Frequency(1)
                 .Result<Position.Component, MinimapRepresentation.Component>();
 

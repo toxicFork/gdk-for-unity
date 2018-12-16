@@ -20,9 +20,11 @@ namespace Improbable.Gdk.QueryBasedInterest
             }; 
         }
         
-        public static Constraint Query()
+        public static Interest Query(ComponentInterest.QueryConstraint constraint)
         {
-            return new Constraint();
+            var interest = new Interest();
+            interest.query.Constraint = constraint;
+            return interest;
         }
         
         public Interest Frequency(float frequency)

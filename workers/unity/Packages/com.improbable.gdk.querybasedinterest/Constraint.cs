@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Improbable.Gdk.Core;
 using UnityEngine;
 
@@ -6,83 +7,6 @@ namespace Improbable.Gdk.QueryBasedInterest
 {
     public class Constraint
     {
-        public Interest SphereConstraint(double radius, Vector3 center)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Sphere(radius, center);
-            return interest;
-        }
-        
-        public Interest CylinderConstraint(double radius, Vector3 center)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Cylinder(radius, center);
-            return interest;
-        }
-        
-        public Interest BoxConstraint(double xLength, double yLength, double zLength, Vector3 center)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Box(xLength, yLength, zLength, center);
-            return interest;
-        }
-        
-        public Interest RelativeSphereConstraint(double radius)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = RelativeSphere(radius);
-            return interest;
-        }
-        
-        public Interest RelativeCylinderConstraint(double radius)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = RelativeCylinder(radius);
-            return interest;
-        }
-        
-        public Interest RelativeBoxConstraint(double xLength, double yLength, double zLength)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = RelativeBox(xLength, yLength, zLength);
-            return interest;
-        }
-        
-        public Interest EntityIdConstraint(EntityId entityId)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = EntityId(entityId);
-            return interest;
-        }
-        
-        public Interest ComponentConstraint<T>() where T : ISpatialComponentData
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Component<T>();
-            return interest;
-        }
-        
-        public Interest ComponentConstraint(uint componentId)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Component(componentId);
-            return interest;
-        }
-        
-        public Interest All(params ComponentInterest.QueryConstraint[] constraints)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = All((IEnumerable<ComponentInterest.QueryConstraint>) constraints);
-            return interest;
-        }
-        
-        public Interest Any(params ComponentInterest.QueryConstraint[] constraints)
-        {
-            var interest = new Interest();
-            interest.query.Constraint = Any((IEnumerable<ComponentInterest.QueryConstraint>) constraints);
-            return interest;
-        }
-        
         public static ComponentInterest.QueryConstraint Sphere(double radius, Vector3 center)
         {
             return new ComponentInterest.QueryConstraint
@@ -194,21 +118,21 @@ namespace Improbable.Gdk.QueryBasedInterest
             };
         }
         
-        public static ComponentInterest.QueryConstraint All(IEnumerable<ComponentInterest.QueryConstraint> constraints)
+        public static ComponentInterest.QueryConstraint All(params ComponentInterest.QueryConstraint[] constraints)
         {
             return new ComponentInterest.QueryConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(constraints),
+                AndConstraint = constraints.ToList(),
                 OrConstraint = new List<ComponentInterest.QueryConstraint>()
             };
         }
         
-        public static ComponentInterest.QueryConstraint Any(IEnumerable<ComponentInterest.QueryConstraint> constraints)
+        public static ComponentInterest.QueryConstraint Any(params ComponentInterest.QueryConstraint[] constraints)
         {
             return new ComponentInterest.QueryConstraint
             {
                 AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(constraints)
+                OrConstraint = constraints.ToList()
             };
         }
     }
