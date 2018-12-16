@@ -1,20 +1,23 @@
 using System.Collections.Generic;
+using Improbable.Gdk.Core;
 using Improbable.Worker.CInterop;
 using UnityEngine;
 
 namespace Improbable.Gdk.QueryBasedInterest
 {
-    public class InterestTemplate
+    public class InterestComponent
     {
         private Dictionary<uint, ComponentInterest> interest;
 
-        public InterestTemplate()
+        public InterestComponent()
         {
             interest = new Dictionary<uint, ComponentInterest>();
         }
 
-        public InterestTemplate AddComponentInterest(uint componentId, ComponentInterest componentInterest)
+        public InterestComponent AddComponentInterest<T>(ComponentInterest componentInterest)
+            where T : ISpatialComponentData
         {
+            var componentId = Dynamic.GetComponentId<T>();
             if (interest.ContainsKey(componentId))
             {
                 Debug.LogWarning($"Skipping component with id {componentId}.");
@@ -27,11 +30,13 @@ namespace Improbable.Gdk.QueryBasedInterest
             return this;
         }
 
-        public InterestTemplate AddQuery(uint componentId, ComponentInterest.Query interestQuery)
+        public InterestComponent AddQuery<T>(ComponentInterest.Query interestQuery)
+            where T : ISpatialComponentData
         {
+            var componentId = Dynamic.GetComponentId<T>();
             if (!interest.TryGetValue(componentId, out var query))
             {
-                return AddComponentInterest(componentId, new ComponentInterest(new List<ComponentInterest.Query>
+                return AddComponentInterest<T>(new ComponentInterest(new List<ComponentInterest.Query>
                 {
                     interestQuery
                 }));
@@ -41,9 +46,9 @@ namespace Improbable.Gdk.QueryBasedInterest
             return this;
         }
 
-        public static implicit operator ComponentData(InterestTemplate interestTemplate)
+        public static implicit operator ComponentData(InterestComponent interestComponent)
         {
-            return Improbable.Interest.Component.CreateSchemaComponentData(interestTemplate.interest);
+            return Improbable.Interest.Component.CreateSchemaComponentData(interestComponent.interest);
         }
     }
 }
