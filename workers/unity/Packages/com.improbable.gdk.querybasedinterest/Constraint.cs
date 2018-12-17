@@ -5,133 +5,118 @@ using UnityEngine;
 
 namespace Improbable.Gdk.QueryBasedInterest
 {
-    public class Constraint
+    public static class Constraint
     {
+        private static readonly List<ComponentInterest.QueryConstraint> EmptyList
+            = new List<ComponentInterest.QueryConstraint>();
+
+        private static ComponentInterest.QueryConstraint Default()
+        {
+            return new ComponentInterest.QueryConstraint
+            {
+                AndConstraint = EmptyList,
+                OrConstraint = EmptyList
+            };
+        }
+
         public static ComponentInterest.QueryConstraint Sphere(double radius, Vector3 center)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.SphereConstraint = new ComponentInterest.SphereConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                SphereConstraint = new ComponentInterest.SphereConstraint
-                {
-                    Center = new Coordinates(center.x, center.y, center.z),
-                    Radius = radius
-                }
+                Center = new Coordinates(center.x, center.y, center.z),
+                Radius = radius
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint Cylinder(double radius, Vector3 center)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.CylinderConstraint = new ComponentInterest.CylinderConstraint()
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                CylinderConstraint = new ComponentInterest.CylinderConstraint()
-                {
-                    Center = new Coordinates(center.x, center.y, center.z),
-                    Radius = radius
-                }
+                Center = new Coordinates(center.x, center.y, center.z),
+                Radius = radius
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint Box(double xLength, double yLength, double zLength, Vector3 center)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.BoxConstraint = new ComponentInterest.BoxConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                BoxConstraint = new ComponentInterest.BoxConstraint
-                {
-                    Center = new Coordinates(center.x, center.y, center.z),
-                    EdgeLength = new EdgeLength(xLength, yLength, zLength)
-                }
+                Center = new Coordinates(center.x, center.y, center.z),
+                EdgeLength = new EdgeLength(xLength, yLength, zLength)
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint RelativeSphere(double radius)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.RelativeSphereConstraint = new ComponentInterest.RelativeSphereConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                RelativeSphereConstraint = new ComponentInterest.RelativeSphereConstraint
-                {
-                    Radius = radius
-                }
+                Radius = radius
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint RelativeCylinder(double radius)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.RelativeCylinderConstraint = new ComponentInterest.RelativeCylinderConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                RelativeCylinderConstraint = new ComponentInterest.RelativeCylinderConstraint
-                {
-                    Radius = radius
-                }
+                Radius = radius
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint RelativeBox(double xLength, double yLength, double zLength)
         {
-            return new ComponentInterest.QueryConstraint
+            var constraint = Default();
+            constraint.RelativeBoxConstraint = new ComponentInterest.RelativeBoxConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                RelativeBoxConstraint = new ComponentInterest.RelativeBoxConstraint
-                {
-                    EdgeLength = new EdgeLength(xLength, yLength, zLength)
-                }
+                EdgeLength = new EdgeLength(xLength, yLength, zLength)
             };
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint EntityId(EntityId entityId)
         {
-            return new ComponentInterest.QueryConstraint
-            {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                EntityIdConstraint = entityId.Id
-            };
+            var constraint = Default();
+            constraint.EntityIdConstraint = entityId.Id;
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint Component<T>() where T : ISpatialComponentData
         {
-            return new ComponentInterest.QueryConstraint
-            {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                ComponentConstraint = Dynamic.GetComponentId<T>()
-            };
+            var constraint = Default();
+            constraint.ComponentConstraint = Dynamic.GetComponentId<T>();
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint Component(uint componentId)
         {
-            return new ComponentInterest.QueryConstraint
-            {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>(),
-                ComponentConstraint = componentId
-            };
+            var constraint = Default();
+            constraint.ComponentConstraint = componentId;
+            return constraint;
         }
-        
+
         public static ComponentInterest.QueryConstraint All(params ComponentInterest.QueryConstraint[] constraints)
         {
             return new ComponentInterest.QueryConstraint
             {
                 AndConstraint = constraints.ToList(),
-                OrConstraint = new List<ComponentInterest.QueryConstraint>()
+                OrConstraint = EmptyList
             };
         }
-        
+
         public static ComponentInterest.QueryConstraint Any(params ComponentInterest.QueryConstraint[] constraints)
         {
             return new ComponentInterest.QueryConstraint
             {
-                AndConstraint = new List<ComponentInterest.QueryConstraint>(),
+                AndConstraint = EmptyList,
                 OrConstraint = constraints.ToList()
             };
         }
