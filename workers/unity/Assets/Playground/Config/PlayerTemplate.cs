@@ -51,7 +51,7 @@ namespace Playground
                     Constraint.Component<MinimapRepresentation.Component>()))
                 .Filter(Position.ComponentId, MinimapRepresentation.ComponentId);
 
-            var interest = new InterestBuilder()
+            var interest = InterestBuilder.Begin()
                 .AddQueries<PlayerControls.Component>(playerQuery, miniMapQuery);
         }
 
@@ -63,7 +63,7 @@ namespace Playground
             var teamQuery = Interest
                 .Query(Constraint.Component(isblue ? BlueTeam.ComponentId : RedTeam.ComponentId));
 
-            var interest = new InterestBuilder()
+            var interest = InterestBuilder.Begin()
                 .AddQuery<PlayerControls.Component>(teamQuery);
         }
 
@@ -83,7 +83,7 @@ namespace Playground
                 .MaxFrequencyHz(1)
                 .Filter(Position.ComponentId, MinimapRepresentation.ComponentId);
 
-            var interest = new InterestBuilder()
+            var interest = InterestBuilder.Begin()
                 .AddQueries<PlayerControls.Component>(playerQuery, miniMapQuery);
         }
     }

@@ -8,9 +8,14 @@ namespace Improbable.Gdk.QueryBasedInterest
     {
         private readonly Dictionary<uint, ComponentInterest> interest;
 
-        public InterestBuilder()
+        private InterestBuilder()
         {
             interest = new Dictionary<uint, ComponentInterest>();
+        }
+
+        public static InterestBuilder Begin()
+        {
+            return new InterestBuilder();
         }
 
         public InterestBuilder AddQueries<T>(params ComponentInterest.Query[] interestQueries)
