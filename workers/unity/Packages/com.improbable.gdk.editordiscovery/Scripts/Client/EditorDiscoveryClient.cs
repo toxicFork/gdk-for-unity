@@ -5,11 +5,11 @@ using System.Threading;
 
 namespace Improbable.GDK.EditorDiscovery
 {
-    internal class EditorDiscoveryClient : ThreadHandle
+    public class EditorDiscoveryClient : ThreadHandle
     {
-        private readonly EditorDiscoveryClientThread _editorDiscoveryClientThread;
+        private readonly EditorDiscoveryClientThread editorDiscoveryClientThread;
 
-        internal EditorDiscoveryClient(
+        public EditorDiscoveryClient(
             int editorDiscoveryPort,
             int timeBetweenBroadcastsMs,
             int packetReceiveTimeoutMs,
@@ -23,7 +23,7 @@ namespace Improbable.GDK.EditorDiscovery
                 additionalNetworkInterfaces = new INetworkInterface[0];
             }
 
-            _editorDiscoveryClientThread = new EditorDiscoveryClientThread(
+            editorDiscoveryClientThread = new EditorDiscoveryClientThread(
                 editorDiscoveryPort,
                 timeBetweenBroadcastsMs,
                 packetReceiveTimeoutMs,
@@ -35,29 +35,29 @@ namespace Improbable.GDK.EditorDiscovery
 
         protected override void ThreadMethod()
         {
-            _editorDiscoveryClientThread.Start();
+            editorDiscoveryClientThread.Start();
         }
 
         public NetworkInterfaceInfo[] GetNetworkInterfaceInfos()
         {
-            return _editorDiscoveryClientThread.GetNetworkInterfaceInfos();
+            return editorDiscoveryClientThread.GetNetworkInterfaceInfos();
         }
 
         private class EditorDiscoveryClientThread
         {
-            private INetworkInterface[] _availableNetInterfaces;
+            private INetworkInterface[] availableNetInterfaces;
 
-            private readonly Dictionary<string, ClientNetworkInterface> _clientInterfaceThreadHandles
+            private readonly Dictionary<string, ClientNetworkInterface> clientInterfaceThreadHandles
                 =
                 new Dictionary<string, ClientNetworkInterface>();
 
-            private readonly ManualResetEvent _killTrigger;
-            private readonly int _timeBetweenBroadcastsMs;
-            private readonly int _packetReceiveTimeoutMs;
-            private readonly int _staleServerResponseTimeMs;
-            private readonly int _editorDiscoveryPort;
-            private readonly int _networkInterfaceCheckInterval;
-            private readonly INetworkInterface[] _additionalNetworkInterfaces;
+            private readonly ManualResetEvent killTrigger;
+            private readonly int timeBetweenBroadcastsMs;
+            private readonly int packetReceiveTimeoutMs;
+            private readonly int staleServerResponseTimeMs;
+            private readonly int editorDiscoveryPort;
+            private readonly int networkInterfaceCheckInterval;
+            private readonly INetworkInterface[] additionalNetworkInterfaces;
 
             public EditorDiscoveryClientThread(
                 int editorDiscoveryPort,
@@ -69,18 +69,18 @@ namespace Improbable.GDK.EditorDiscovery
                 ManualResetEvent killTrigger
             )
             {
-                _editorDiscoveryPort = editorDiscoveryPort;
-                _timeBetweenBroadcastsMs = timeBetweenBroadcastsMs;
-                _packetReceiveTimeoutMs = packetReceiveTimeoutMs;
-                _staleServerResponseTimeMs = staleServerResponseTimeMs;
-                _networkInterfaceCheckInterval = networkInterfaceCheckInterval;
-                _additionalNetworkInterfaces = additionalNetworkInterfaces;
-                _killTrigger = killTrigger;
+                this.editorDiscoveryPort = editorDiscoveryPort;
+                this.timeBetweenBroadcastsMs = timeBetweenBroadcastsMs;
+                this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
+                this.staleServerResponseTimeMs = staleServerResponseTimeMs;
+                this.networkInterfaceCheckInterval = networkInterfaceCheckInterval;
+                this.additionalNetworkInterfaces = additionalNetworkInterfaces;
+                this.killTrigger = killTrigger;
             }
 
             public void Start()
             {
-                _availableNetInterfaces = new INetworkInterface[0];
+                availableNetInterfaces = new INetworkInterface[0];
 
                 Loop();
             }
@@ -94,7 +94,7 @@ namespace Improbable.GDK.EditorDiscovery
 
                     try
                     {
-                        if (_killTrigger.WaitOne(_networkInterfaceCheckInterval))
+                        if (killTrigger.WaitOne(networkInterfaceCheckInterval))
                         {
                             KillAllThreads();
                             return;
@@ -112,12 +112,12 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 var networkInterfaceWrappers = NetworkInterface.GetAllNetworkInterfaces()
                     .Select(networkInterface => (INetworkInterface) new NetworkInterfaceWrapper(networkInterface))
-                    .Concat(_additionalNetworkInterfaces);
+                    .Concat(additionalNetworkInterfaces);
 
-                _availableNetInterfaces = networkInterfaceWrappers
+                availableNetInterfaces = networkInterfaceWrappers
                     .Where(networkInterface =>
                     {
-                        if (_availableNetInterfaces.Any(otherInterface => otherInterface.Id == networkInterface.Id))
+                        if (availableNetInterfaces.Any(otherInterface => otherInterface.Id == networkInterface.Id))
                         {
                             return true;
                         }
@@ -153,7 +153,7 @@ namespace Improbable.GDK.EditorDiscovery
 
             private void CheckForDeadNetworkInterfaces()
             {
-                _availableNetInterfaces = _availableNetInterfaces
+                availableNetInterfaces = availableNetInterfaces
                     .Where(networkInterface =>
                     {
                         if (IsNetworkInterfaceSuitable(networkInterface))
@@ -161,11 +161,11 @@ namespace Improbable.GDK.EditorDiscovery
                             return true;
                         }
 
-                        var threadHandle = _clientInterfaceThreadHandles[networkInterface.Id];
+                        var threadHandle = clientInterfaceThreadHandles[networkInterface.Id];
 
                         threadHandle.Kill(true);
 
-                        _clientInterfaceThreadHandles.Remove(networkInterface.Id);
+                        clientInterfaceThreadHandles.Remove(networkInterface.Id);
 
                         return false;
                     }).ToArray();
@@ -173,37 +173,37 @@ namespace Improbable.GDK.EditorDiscovery
 
             private void KillAllThreads()
             {
-                foreach (var clientInterfaceThreadHandle in _clientInterfaceThreadHandles.Values)
+                foreach (var clientInterfaceThreadHandle in clientInterfaceThreadHandles.Values)
                 {
                     clientInterfaceThreadHandle.Kill(true);
                 }
 
-                _clientInterfaceThreadHandles.Clear();
+                clientInterfaceThreadHandles.Clear();
             }
 
             private void SpawnThreadForInterface(INetworkInterface networkInterface)
             {
-                if (_clientInterfaceThreadHandles.ContainsKey(networkInterface.Id))
+                if (clientInterfaceThreadHandles.ContainsKey(networkInterface.Id))
                 {
                     return;
                 }
 
                 var listenThreadHandle = new ClientNetworkInterface(
                     networkInterface,
-                    _editorDiscoveryPort,
-                    _timeBetweenBroadcastsMs,
-                    _packetReceiveTimeoutMs,
-                    _staleServerResponseTimeMs,
+                    editorDiscoveryPort,
+                    timeBetweenBroadcastsMs,
+                    packetReceiveTimeoutMs,
+                    staleServerResponseTimeMs,
                     true);
 
                 listenThreadHandle.Start();
 
-                _clientInterfaceThreadHandles[networkInterface.Id] = listenThreadHandle;
+                clientInterfaceThreadHandles[networkInterface.Id] = listenThreadHandle;
             }
 
             public NetworkInterfaceInfo[] GetNetworkInterfaceInfos()
             {
-                return _clientInterfaceThreadHandles.Values
+                return clientInterfaceThreadHandles.Values
                     .Select(clientInterfaceThreadHandle => clientInterfaceThreadHandle.GetNetworkInterfaceInfo())
                     .ToArray();
             }

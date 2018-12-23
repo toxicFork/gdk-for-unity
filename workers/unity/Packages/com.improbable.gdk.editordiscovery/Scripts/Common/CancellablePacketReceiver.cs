@@ -7,11 +7,11 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class CancellablePacketReceiver
     {
-        private readonly int _packetReceiveTimeoutMs;
-        private readonly IAsyncResult _beginReceive;
-        private readonly WaitHandle _handle;
-        private readonly UdpClient _client;
-        private readonly ManualResetEvent _killTrigger;
+        private readonly int packetReceiveTimeoutMs;
+        private readonly IAsyncResult beginReceive;
+        private readonly WaitHandle handle;
+        private readonly UdpClient client;
+        private readonly ManualResetEvent killTrigger;
 
         public enum PollResult
         {
@@ -22,12 +22,12 @@ namespace Improbable.GDK.EditorDiscovery
 
         public CancellablePacketReceiver(UdpClient client, int packetReceiveTimeoutMs, ManualResetEvent killTrigger)
         {
-            _client = client;
-            _packetReceiveTimeoutMs = packetReceiveTimeoutMs;
-            _killTrigger = killTrigger;
+            this.client = client;
+            this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
+            this.killTrigger = killTrigger;
 
-            _beginReceive = client.BeginReceive(null, null);
-            _handle = _beginReceive.AsyncWaitHandle;
+            beginReceive = client.BeginReceive(null, null);
+            handle = beginReceive.AsyncWaitHandle;
         }
 
         public PollResult Poll(out IPEndPoint remoteEndPoint, out byte[] receivedBytes)
@@ -37,18 +37,18 @@ namespace Improbable.GDK.EditorDiscovery
 
             try
             {
-                if (_handle.WaitOne(_packetReceiveTimeoutMs))
+                if (handle.WaitOne(packetReceiveTimeoutMs))
                 {
                     var remoteEp = new IPEndPoint(IPAddress.Any, 0);
 
-                    receivedBytes = _client.EndReceive(_beginReceive, ref remoteEp);
+                    receivedBytes = client.EndReceive(beginReceive, ref remoteEp);
 
                     remoteEndPoint = remoteEp;
 
                     return PollResult.Success;
                 }
 
-                if (_killTrigger.WaitOne(0))
+                if (killTrigger.WaitOne(0))
                 {
                     return PollResult.Cancelled;
                 }
@@ -66,7 +66,7 @@ namespace Improbable.GDK.EditorDiscovery
             var remoteEp = new IPEndPoint(IPAddress.Any, 0);
             try
             {
-                _client.EndReceive(_beginReceive, ref remoteEp);
+                client.EndReceive(beginReceive, ref remoteEp);
             }
             catch (ObjectDisposedException)
             {

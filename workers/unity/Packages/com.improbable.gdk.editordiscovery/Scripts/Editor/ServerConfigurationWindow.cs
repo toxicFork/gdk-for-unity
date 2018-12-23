@@ -7,15 +7,17 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ServerConfigurationWindow : EditorWindow
     {
-        private EditorDiscoveryServer _editorDiscoveryServer;
-        private ClientNetworkInterface _clientNetworkInterface;
-        private EditorDiscoveryClient _editorDiscoveryClient;
+        private EditorDiscoveryServer editorDiscoveryServer;
+        private ClientNetworkInterface clientNetworkInterface;
+        private EditorDiscoveryClient editorDiscoveryClient;
 
-        private string _serverName;
+        private string serverName;
 
-        private string _clientSendAddressString = "127.255.255.255";
+        private string clientSendAddressString = "127.255.255.255";
 
-        private int _editorDiscoveryPort = 8888;
+        private int editorDiscoveryPort = 8888;
+        private NetworkInterfaceInfo singleNetworkInterfaceInfo;
+        private NetworkInterfaceInfo[] fullClientNetworkInterfaceInfos;
 
         [MenuItem("SpatialOS/Editor Discovery Window")]
         private static void ShowWindow()
@@ -25,33 +27,36 @@ namespace Improbable.GDK.EditorDiscovery
 
         public void OnEnable()
         {
-            _serverName = EditorPrefs.GetString("discovery-server-name", "default");
+            serverName = EditorPrefs.GetString("discovery-server-name", "default");
         }
 
         // ReSharper disable once InvertIf
         public void OnDisable()
         {
-            if (_editorDiscoveryServer != null)
+            if (editorDiscoveryServer != null)
             {
-                _editorDiscoveryServer.Kill(true);
-                _editorDiscoveryServer = null;
+                editorDiscoveryServer.Kill(true);
+                editorDiscoveryServer = null;
             }
 
-            if (_clientNetworkInterface != null)
+            if (clientNetworkInterface != null)
             {
-                _clientNetworkInterface.Kill(true);
-                _clientNetworkInterface = null;
+                clientNetworkInterface.Kill(true);
+                clientNetworkInterface = null;
             }
 
-            if (_editorDiscoveryClient != null)
+            if (editorDiscoveryClient != null)
             {
-                _editorDiscoveryClient.Kill(true);
-                _editorDiscoveryClient = null;
+                editorDiscoveryClient.Kill(true);
+                editorDiscoveryClient = null;
             }
         }
 
         public void Update()
         {
+            singleNetworkInterfaceInfo = clientNetworkInterface?.GetNetworkInterfaceInfo();
+            fullClientNetworkInterfaceInfos = editorDiscoveryClient?.GetNetworkInterfaceInfos();
+
             // This is necessary to make the framerate normal for the editor window.
             Repaint();
         }
@@ -59,41 +64,41 @@ namespace Improbable.GDK.EditorDiscovery
         public void OnGUI()
         {
             using (new EditorGUI.DisabledScope(
-                _editorDiscoveryClient != null ||
-                _editorDiscoveryServer != null ||
-                _clientNetworkInterface != null))
+                editorDiscoveryClient != null ||
+                editorDiscoveryServer != null ||
+                clientNetworkInterface != null))
             {
-                _editorDiscoveryPort = EditorGUILayout.IntField("Port", _editorDiscoveryPort);
+                editorDiscoveryPort = EditorGUILayout.IntField("Port", editorDiscoveryPort);
             }
 
             EditorGUILayout.Space();
 
             using (var changeCheck = new EditorGUI.ChangeCheckScope())
             {
-                _serverName = EditorGUILayout.TextField("Server Name", _serverName);
+                serverName = EditorGUILayout.TextField("Server Name", serverName);
 
                 if (changeCheck.changed)
                 {
-                    EditorPrefs.SetString("discovery-server-name", _serverName);
+                    EditorPrefs.SetString("discovery-server-name", serverName);
 
-                    _editorDiscoveryServer?.SetName(_serverName);
+                    editorDiscoveryServer?.SetName(serverName);
                 }
             }
 
-            if (_editorDiscoveryServer == null)
+            if (editorDiscoveryServer == null)
             {
                 if (GUILayout.Button("Start"))
                 {
-                    _editorDiscoveryServer = new EditorDiscoveryServer(_serverName, _editorDiscoveryPort, 10);
-                    _editorDiscoveryServer.Start();
+                    editorDiscoveryServer = new EditorDiscoveryServer(serverName, editorDiscoveryPort, 10);
+                    editorDiscoveryServer.Start();
                 }
             }
             else
             {
                 if (GUILayout.Button("Stop"))
                 {
-                    _editorDiscoveryServer.Kill(true);
-                    _editorDiscoveryServer = null;
+                    editorDiscoveryServer.Kill(true);
+                    editorDiscoveryServer = null;
                 }
             }
 
@@ -106,7 +111,7 @@ namespace Improbable.GDK.EditorDiscovery
                 GUILayout.FlexibleSpace();
             }
 
-            using (new EditorGUI.DisabledScope(_clientNetworkInterface != null))
+            using (new EditorGUI.DisabledScope(clientNetworkInterface != null))
             {
                 using (new GUILayout.HorizontalScope())
                 {
@@ -114,82 +119,92 @@ namespace Improbable.GDK.EditorDiscovery
                     {
                         GUIUtility.hotControl = 0;
                         GUIUtility.keyboardControl = 0;
-                        _clientSendAddressString = "127.255.255.255";
+                        clientSendAddressString = "127.255.255.255";
                     }
 
                     if (GUILayout.Button("Global Broadcast"))
                     {
                         GUIUtility.hotControl = 0;
                         GUIUtility.keyboardControl = 0;
-                        _clientSendAddressString = IPAddress.Broadcast.ToString();
+                        clientSendAddressString = IPAddress.Broadcast.ToString();
                         // clientListenAddressString = "127.0.0.1";
                     }
                 }
 
-                _clientSendAddressString = EditorGUILayout.TextField("Test address", _clientSendAddressString);
+                clientSendAddressString = EditorGUILayout.TextField("Test address", clientSendAddressString);
             }
 
-            if (_clientNetworkInterface == null)
+            if (clientNetworkInterface == null)
             {
                 if (GUILayout.Button("Simple Client Start"))
                 {
-                    var sendAddress = IPAddress.Parse(_clientSendAddressString);
+                    EditorApplication.delayCall += () =>
+                    {
+                        var sendAddress = IPAddress.Parse(clientSendAddressString);
 
-                    _clientNetworkInterface = new ClientNetworkInterface(
-                        new FakeNetworkInterface("Hand-Crafted Network Interface", IPAddress.Any, sendAddress),
-                        _editorDiscoveryPort,
-                        1000,
-                        20,
-                        2000,
-                        false);
-                    _clientNetworkInterface.Start();
+                        clientNetworkInterface = new ClientNetworkInterface(
+                            new FakeNetworkInterface("Hand-Crafted Network Interface", IPAddress.Any, sendAddress),
+                            editorDiscoveryPort,
+                            1000,
+                            20,
+                            2000,
+                            false);
+                        clientNetworkInterface.Start();
+                    };
                 }
             }
             else
             {
                 if (GUILayout.Button("Client Stop"))
                 {
-                    _clientNetworkInterface.Kill(true);
-                    _clientNetworkInterface = null;
+                    EditorApplication.delayCall += () =>
+                    {
+                        clientNetworkInterface.Kill(true);
+                        clientNetworkInterface = null;
+                    };
                 }
 
-                if (_clientNetworkInterface != null)
+                if (clientNetworkInterface != null && singleNetworkInterfaceInfo != null)
                 {
-                    var networkInterfaceInfo = _clientNetworkInterface.GetNetworkInterfaceInfo();
-
-                    DisplayNetworkInterfaceInfo(networkInterfaceInfo);
+                    DisplayNetworkInterfaceInfo(singleNetworkInterfaceInfo);
                 }
             }
 
-            if (_editorDiscoveryClient == null)
+            if (editorDiscoveryClient == null)
             {
                 if (GUILayout.Button("Full Client Start"))
                 {
-                    _editorDiscoveryClient = new EditorDiscoveryClient(
-                        _editorDiscoveryPort,
-                        1000,
-                        20,
-                        5000,
-                        5000,
-                        new[]
-                        {
-                            new FakeLocalhostNetworkInterface()
-                        }
-                    );
-                    _editorDiscoveryClient.Start();
+                    EditorApplication.delayCall += () =>
+                    {
+                        editorDiscoveryClient = new EditorDiscoveryClient(
+                            editorDiscoveryPort,
+                            1000,
+                            20,
+                            5000,
+                            5000,
+                            new[]
+                            {
+                                new FakeLocalhostNetworkInterface()
+                            }
+                        );
+                        editorDiscoveryClient.Start();
+                    };
                 }
             }
             else
             {
                 if (GUILayout.Button("Full Client Stop"))
                 {
-                    _editorDiscoveryClient.Kill(true);
-                    _editorDiscoveryClient = null;
+                    EditorApplication.delayCall += () =>
+                    {
+                        editorDiscoveryClient.Kill(true);
+                        editorDiscoveryClient = null;
+                    };
                 }
 
-                if (_editorDiscoveryClient != null)
+                if (editorDiscoveryClient != null && fullClientNetworkInterfaceInfos != null)
                 {
-                    foreach (var networkInterfaceInfo in _editorDiscoveryClient.GetNetworkInterfaceInfos())
+                    foreach (var networkInterfaceInfo in fullClientNetworkInterfaceInfos)
                     {
                         DisplayNetworkInterfaceInfo(networkInterfaceInfo);
                     }
@@ -211,13 +226,13 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 foreach (var serverInfo in networkInterfaceInfo.ServerInfos)
                 {
-                    EditorGUILayout.LabelField($"ServerName: {serverInfo.ServerResponse.ServerName}");
+                    EditorGUILayout.LabelField($"ServerName: {serverInfo.ServerResponse.serverName}");
 
                     using (new EditorGUI.IndentLevelScope(1))
                     {
-                        EditorGUILayout.LabelField($"DataPath: {serverInfo.ServerResponse.DataPath}");
-                        EditorGUILayout.LabelField($"CompanyName: {serverInfo.ServerResponse.CompanyName}");
-                        EditorGUILayout.LabelField($"ProductName: {serverInfo.ServerResponse.ProductName}");
+                        EditorGUILayout.LabelField($"DataPath: {serverInfo.ServerResponse.dataPath}");
+                        EditorGUILayout.LabelField($"CompanyName: {serverInfo.ServerResponse.companyName}");
+                        EditorGUILayout.LabelField($"ProductName: {serverInfo.ServerResponse.productName}");
                         EditorGUILayout.LabelField($"IPAddress: {serverInfo.IPAddress}");
                         var timeSpan = (DateTime.Now - serverInfo.ResponseTime);
                         EditorGUILayout.LabelField(

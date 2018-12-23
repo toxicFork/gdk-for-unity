@@ -4,28 +4,28 @@ using UnityEngine;
 
 namespace Improbable.GDK.EditorDiscovery
 {
-    internal abstract class ThreadHandle
+    public abstract class ThreadHandle
     {
-        private Thread _thread;
+        private Thread thread;
 
         protected readonly ManualResetEvent KillTrigger = new ManualResetEvent(false);
 
-        private bool _isKilled;
-        private bool _isStarted;
+        private bool isKilled;
+        private bool isStarted;
 
-        internal void Start()
+        public void Start()
         {
-            if (_isKilled)
+            if (isKilled)
             {
                 throw new Exception("This thread handle was killed.");
             }
 
-            if (_isStarted)
+            if (isStarted)
             {
                 throw new Exception("Cannot start a thread handle twice.");
             }
 
-            _thread = new Thread(() =>
+            thread = new Thread(() =>
             {
                 try
                 {
@@ -38,16 +38,16 @@ namespace Improbable.GDK.EditorDiscovery
                 }
             });
 
-            _thread.Start();
+            thread.Start();
 
-            _isStarted = true;
+            isStarted = true;
         }
 
         protected abstract void ThreadMethod();
 
         public void Kill(bool wait = false)
         {
-            if (_isKilled)
+            if (isKilled)
             {
                 throw new Exception("This thread handle was already killed.");
             }
@@ -56,14 +56,14 @@ namespace Improbable.GDK.EditorDiscovery
 
             if (wait)
             {
-                if (!_thread.Join(1000))
+                if (!thread.Join(1000))
                 {
-                    _thread.Abort();
+                    thread.Abort();
                     Debug.LogError("Server did not die within 1 second of kill message.");
                 }
             }
 
-            _isKilled = true;
+            isKilled = true;
         }
     }
 }

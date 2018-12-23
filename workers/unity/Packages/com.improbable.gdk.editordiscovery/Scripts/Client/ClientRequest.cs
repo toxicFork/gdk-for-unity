@@ -3,10 +3,10 @@ using System;
 [Serializable]
 public class ClientRequest
 {
-    public int ListenPort;
+    public int listenPort;
 
     public ClientRequest(int listenPort)
     {
-        ListenPort = listenPort;
+        this.listenPort = listenPort;
     }
 }

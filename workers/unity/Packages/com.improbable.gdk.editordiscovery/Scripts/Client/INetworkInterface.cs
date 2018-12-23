@@ -3,7 +3,7 @@ using System.Net.NetworkInformation;
 
 namespace Improbable.GDK.EditorDiscovery
 {
-    internal interface INetworkInterface
+    public interface INetworkInterface
     {
         string Name { get; }
         string Id { get; }

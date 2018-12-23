@@ -20,15 +20,15 @@ namespace Improbable.GDK.EditorDiscovery
 
         public OperationalStatus OperationalStatus => networkInterface.OperationalStatus;
 
-        private IPAddress _bindingAddressCache;
+        private IPAddress bindingAddressCache;
 
         public IPAddress GetBindingAddress()
         {
-            if (_bindingAddressCache == null && networkInterface.OperationalStatus != OperationalStatus.Down)
+            if (bindingAddressCache == null && networkInterface.OperationalStatus != OperationalStatus.Down)
             {
                 try
                 {
-                    _bindingAddressCache = networkInterface
+                    bindingAddressCache = networkInterface
                         .GetIPProperties()
                         .UnicastAddresses
                         .FirstOrDefault(address => address.Address.AddressFamily == AddressFamily.InterNetwork)
@@ -40,7 +40,7 @@ namespace Improbable.GDK.EditorDiscovery
                 }
             }
 
-            return _bindingAddressCache;
+            return bindingAddressCache;
         }
 
         public IPAddress GetSendAddress()

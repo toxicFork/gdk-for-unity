@@ -9,7 +9,7 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class EditorDiscoveryServer : ThreadHandle
     {
-        private readonly EditorDiscoveryServerThread _editorDiscoveryServerThread;
+        private readonly EditorDiscoveryServerThread editorDiscoveryServerThread;
 
         public EditorDiscoveryServer(string serverName, int editorDiscoveryPort, int packetReceiveTimeoutMs)
         {
@@ -17,7 +17,7 @@ namespace Improbable.GDK.EditorDiscovery
             var companyName = Application.companyName;
             var productName = Application.productName;
 
-            _editorDiscoveryServerThread = new EditorDiscoveryServerThread(
+            editorDiscoveryServerThread = new EditorDiscoveryServerThread(
                 serverName,
                 editorDiscoveryPort,
                 packetReceiveTimeoutMs,
@@ -29,25 +29,25 @@ namespace Improbable.GDK.EditorDiscovery
 
         protected override void ThreadMethod()
         {
-            _editorDiscoveryServerThread.ThreadMethod();
+            editorDiscoveryServerThread.ThreadMethod();
         }
 
         public void SetName(string newName)
         {
-            _editorDiscoveryServerThread.ServerName = newName;
+            editorDiscoveryServerThread.ServerName = newName;
         }
 
         private class EditorDiscoveryServerThread
         {
-            private readonly int _packetReceiveTimeoutMs;
-            private readonly int _editorDiscoveryPort;
-            private readonly ManualResetEvent _killTrigger;
+            private readonly int packetReceiveTimeoutMs;
+            private readonly int editorDiscoveryPort;
+            private readonly ManualResetEvent killTrigger;
 
             public string ServerName;
 
-            private readonly string _dataPath;
-            private readonly string _companyName;
-            private readonly string _productName;
+            private readonly string dataPath;
+            private readonly string companyName;
+            private readonly string productName;
 
             internal EditorDiscoveryServerThread(
                 string serverName,
@@ -59,13 +59,13 @@ namespace Improbable.GDK.EditorDiscovery
                 string productName)
             {
                 ServerName = serverName;
-                _packetReceiveTimeoutMs = packetReceiveTimeoutMs;
-                _editorDiscoveryPort = editorDiscoveryPort;
-                _killTrigger = killTrigger;
+                this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
+                this.editorDiscoveryPort = editorDiscoveryPort;
+                this.killTrigger = killTrigger;
 
-                _dataPath = dataPath;
-                _companyName = companyName;
-                _productName = productName;
+                this.dataPath = dataPath;
+                this.companyName = companyName;
+                this.productName = productName;
             }
 
             internal void ThreadMethod()
@@ -78,7 +78,7 @@ namespace Improbable.GDK.EditorDiscovery
                     // e.g. multiple Unity editor instances in the same computer.
                     socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
                     socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-                    var ipEndPoint = new IPEndPoint(IPAddress.Any, _editorDiscoveryPort);
+                    var ipEndPoint = new IPEndPoint(IPAddress.Any, editorDiscoveryPort);
                     socket.Bind(ipEndPoint);
 
                     try
@@ -115,7 +115,7 @@ namespace Improbable.GDK.EditorDiscovery
 
             private TickResult Tick(UdpClient client)
             {
-                var receiveHandle = new CancellablePacketReceiver(client, _packetReceiveTimeoutMs, _killTrigger);
+                var receiveHandle = new CancellablePacketReceiver(client, packetReceiveTimeoutMs, killTrigger);
 
                 // Wait for a packet or a kill
                 while (true)
@@ -129,7 +129,7 @@ namespace Improbable.GDK.EditorDiscovery
 
                         try
                         {
-                            responsePort = JsonUtility.FromJson<ClientRequest>(receivedString).ListenPort;
+                            responsePort = JsonUtility.FromJson<ClientRequest>(receivedString).listenPort;
                         }
                         catch (Exception)
                         {
@@ -138,10 +138,10 @@ namespace Improbable.GDK.EditorDiscovery
 
                         var serverInfo = new EditorDiscoveryResponse
                         {
-                            ServerName = ServerName,
-                            CompanyName = _companyName,
-                            ProductName = _productName,
-                            DataPath = _dataPath,
+                            serverName = ServerName,
+                            companyName = companyName,
+                            productName = productName,
+                            dataPath = dataPath,
                         };
 
                         ServerResponseThread.StartThread(serverInfo, new IPEndPoint(remoteEp.Address, responsePort));

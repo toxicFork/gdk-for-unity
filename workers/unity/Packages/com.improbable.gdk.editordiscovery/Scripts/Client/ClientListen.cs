@@ -10,14 +10,14 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class ClientListen : ThreadHandle
     {
-        private readonly ClientListenThread _clientListenThread;
+        private readonly ClientListenThread clientListenThread;
 
         public ClientListen(
             int packetReceiveTimeoutMs,
             int staleServerResponseTimeMs
         )
         {
-            _clientListenThread =
+            clientListenThread =
                 new ClientListenThread(
                     packetReceiveTimeoutMs,
                     staleServerResponseTimeMs,
@@ -26,30 +26,30 @@ namespace Improbable.GDK.EditorDiscovery
 
         protected override void ThreadMethod()
         {
-            _clientListenThread.ThreadMethod();
+            clientListenThread.ThreadMethod();
         }
 
         public void WaitForReady()
         {
-            _clientListenThread.ReadyTrigger.WaitOne();
+            clientListenThread.ReadyTrigger.WaitOne();
         }
 
         public int GetPort()
         {
-            return _clientListenThread.Port;
+            return clientListenThread.Port;
         }
 
         public ServerInfo[] GetServerInfos()
         {
-            return _clientListenThread.GetServerInfos();
+            return clientListenThread.GetServerInfos();
         }
 
         private class ClientListenThread
         {
-            private readonly ManualResetEvent _killTrigger;
-            private readonly int _packetReceiveTimeoutMs;
-            private readonly int _staleServerResponseTimeMs;
-            private readonly List<ServerInfo> _serverInfoList = new List<ServerInfo>();
+            private readonly ManualResetEvent killTrigger;
+            private readonly int packetReceiveTimeoutMs;
+            private readonly int staleServerResponseTimeMs;
+            private readonly List<ServerInfo> serverInfoList = new List<ServerInfo>();
 
             public readonly ManualResetEvent ReadyTrigger;
 
@@ -61,24 +61,24 @@ namespace Improbable.GDK.EditorDiscovery
                 ManualResetEvent killTrigger
             )
             {
-                _killTrigger = killTrigger;
-                _packetReceiveTimeoutMs = packetReceiveTimeoutMs;
-                _staleServerResponseTimeMs = staleServerResponseTimeMs;
+                this.killTrigger = killTrigger;
+                this.packetReceiveTimeoutMs = packetReceiveTimeoutMs;
+                this.staleServerResponseTimeMs = staleServerResponseTimeMs;
 
                 ReadyTrigger = new ManualResetEvent(false);
             }
 
             public ServerInfo[] GetServerInfos()
             {
-                lock (_serverInfoList)
+                lock (serverInfoList)
                 {
-                    var serverInfos = _serverInfoList.ToArray();
+                    var serverInfos = serverInfoList.ToArray();
                     Array.Sort(serverInfos, (a, b) =>
                     {
-                        var serverNameSort = string.Compare(a.ServerResponse.ServerName, b.ServerResponse.ServerName,
+                        var serverNameSort = string.Compare(a.ServerResponse.serverName, b.ServerResponse.serverName,
                             StringComparison.Ordinal);
                         return serverNameSort == 0
-                            ? string.Compare(a.ServerResponse.DataPath, b.ServerResponse.DataPath,
+                            ? string.Compare(a.ServerResponse.dataPath, b.ServerResponse.dataPath,
                                 StringComparison.Ordinal)
                             : serverNameSort;
                     });
@@ -90,9 +90,6 @@ namespace Improbable.GDK.EditorDiscovery
             {
                 using (var receiveClient = new UdpClient())
                 {
-                    // receiveClient.Client.SendTimeout = 200;
-                    // receiveClient.Client.ReceiveTimeout = 200;
-
                     receiveClient.Client.SetSocketOption(SocketOptionLevel.Socket,
                         SocketOptionName.ReuseAddress, true);
                     receiveClient.Client.SetSocketOption(SocketOptionLevel.Socket,
@@ -101,14 +98,13 @@ namespace Improbable.GDK.EditorDiscovery
 
                     Port = ((IPEndPoint) receiveClient.Client.LocalEndPoint).Port;
 
-                    // TODO start listen
                     ReadyTrigger.Set();
 
                     while (true)
                     {
                         var packetReceiver = new CancellablePacketReceiver(receiveClient,
-                            _packetReceiveTimeoutMs,
-                            _killTrigger);
+                            packetReceiveTimeoutMs,
+                            killTrigger);
 
                         while (true)
                         {
@@ -123,13 +119,13 @@ namespace Improbable.GDK.EditorDiscovery
                                 var ipAddress = remoteEndPoint.Address;
 
                                 var newServerInfo = new ServerInfo(ipAddress, serverResponse);
-                                lock (_serverInfoList)
+                                lock (serverInfoList)
                                 {
-                                    _serverInfoList.RemoveAll(existingServerInfo =>
+                                    serverInfoList.RemoveAll(existingServerInfo =>
                                         existingServerInfo.IPAddress.Equals(newServerInfo.IPAddress)
-                                        && existingServerInfo.ServerResponse.DataPath ==
-                                        newServerInfo.ServerResponse.DataPath);
-                                    _serverInfoList.Add(newServerInfo);
+                                        && existingServerInfo.ServerResponse.dataPath ==
+                                        newServerInfo.ServerResponse.dataPath);
+                                    serverInfoList.Add(newServerInfo);
                                 }
 
                                 break;
@@ -137,12 +133,12 @@ namespace Improbable.GDK.EditorDiscovery
 
                             if (receiveResult == CancellablePacketReceiver.PollResult.TimedOut)
                             {
-                                lock (_serverInfoList)
+                                lock (serverInfoList)
                                 {
-                                    _serverInfoList.RemoveAll(serverInfo =>
+                                    serverInfoList.RemoveAll(serverInfo =>
                                     {
                                         if (!((DateTime.Now - serverInfo.ResponseTime).TotalMilliseconds >
-                                            _staleServerResponseTimeMs))
+                                            staleServerResponseTimeMs))
                                         {
                                             return false;
                                         }

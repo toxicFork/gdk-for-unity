@@ -5,14 +5,14 @@ namespace Improbable.GDK.EditorDiscovery
 {
     internal class FakeNetworkInterface : INetworkInterface
     {
-        private readonly IPAddress _bindAddress;
-        private readonly IPAddress _sendAddress;
+        private readonly IPAddress bindAddress;
+        private readonly IPAddress sendAddress;
 
         public FakeNetworkInterface(string name, IPAddress bindAddress, IPAddress sendAddress)
         {
             Name = name;
-            _bindAddress = bindAddress;
-            _sendAddress = sendAddress;
+            this.bindAddress = bindAddress;
+            this.sendAddress = sendAddress;
         }
 
         public string Name { get; }
@@ -23,12 +23,12 @@ namespace Improbable.GDK.EditorDiscovery
 
         public IPAddress GetBindingAddress()
         {
-            return _bindAddress;
+            return bindAddress;
         }
 
         public IPAddress GetSendAddress()
         {
-            return _sendAddress;
+            return sendAddress;
         }
     }
 }
